@@ -12,7 +12,7 @@
 
 ## 📖 About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://ananyajoshi-cseai.github.io/After-Feel-Poetry-collection/)
+![Product Name Screen Shot](./preview.png)(https://ananyajoshi-cseai.github.io/After-Feel-Poetry-collection/)
 
 Afterfeel is more than just a static blog...
 
@@ -113,4 +113,3 @@ Afterfeel/
   <p><i>Merging Logic with Emotion</i></p>
 </div>
 ```
-[product-screenshot]: ./preview.png
