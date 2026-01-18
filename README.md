@@ -12,6 +12,10 @@
 
 ## 📖 About The Project
 
+[![Product Name Screen Shot][product-screenshot]](https://ananyajoshi-cseai.github.io/After-Feel-Poetry-collection/)
+
+Afterfeel is more than just a static blog...
+
 Afterfeel is more than just a static blog; it is a **reactive web experience**. The core philosophy was to create a "living" interface where the UI adapts to the content.
 
 The application features a **"Zero-Build" architecture**, meaning it runs entirely in the browser using React and Tailwind CSS via CDNs. This design choice highlights mastery over fundamental web technologies without reliance on heavy build tools like Webpack or Node.js.
@@ -109,3 +113,4 @@ Afterfeel/
   <p><i>Merging Logic with Emotion</i></p>
 </div>
 ```
+[product-screenshot]: ./preview.png
