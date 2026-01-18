@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="An interactive, AI-powered poetry portfolio featuring sentiment analysis and immersive reading modes.">
+    <title>After Feel | AI Powered</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Lato', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    animation: {
+                        'float': 'float 15s linear infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'fadeIn': 'fadeIn 0.6s ease-out',
+                        'slideUp': 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+                        'gradient-x': 'gradient-x 15s ease infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        'gradient-x': {
+                            '0%, 100%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'right center'
+                            },
+                        },
+                    },
+                    colors: {
+                        paper: '#fdfbf7',
+                        darkPaper: '#0f172a',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Base Reset & Variables */
+        body {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        /* Layout Utilities */
+        .glass-panel {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        /* Reusable Component Classes */
+        .btn-icon {
+            @apply p-2 rounded-full transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900;
+        }
+        
+        .card-base {
+            @apply bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 transition-all duration-300;
+        }
+
+        .card-hover {
+            @apply hover:shadow-xl hover:-translate-y-1 hover:border-indigo-100 dark:hover:border-slate-700;
+        }
+
+        /* Animation Keyframes */
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-20vh) rotate(360deg); opacity: 0; }
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-paper text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300 font-sans">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useRef } = React;
+
+        // --- ICONS ---
+        const Icon = ({ children, className, size = 24, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
+                {children}
+            </svg>
+        );
+
+        const Heart = (props) => <Icon {...props}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></Icon>;
+        const Search = (props) => <Icon {...props}><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></Icon>;
+        const Volume2 = (props) => <Icon {...props}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M15.54 8.46a5 5 0 0 1 0 7.07" /><path d="M19.07 4.93a10 10 0 0 1 0 14.14" /></Icon>;
+        const VolumeX = (props) => <Icon {...props}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><line x1="23" y1="9" x2="17" y2="15" /><line x1="17" y1="9" x2="23" y2="15" /></Icon>;
+        const BarChart3 = (props) => <Icon {...props}><path d="M3 3v18h18" /><path d="M18 17V9" /><path d="M13 17V5" /><path d="M8 17v-3" /></Icon>;
+        const BookOpen = (props) => <Icon {...props}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></Icon>;
+        const Sparkles = (props) => <Icon {...props}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /><path d="M5 3v4" /><path d="M9 5H5" /></Icon>;
+        const CloudRain = (props) => <Icon {...props}><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" /><path d="M16 14v6" /><path d="M8 14v6" /><path d="M12 16v6" /></Icon>;
+        const Flower = (props) => <Icon {...props}><circle cx="12" cy="12" r="3" /><path d="M12 16.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 1 1 4.5 4.5 4.5 4.5 0 1 1-4.5 4.5" /><path d="M12 7.5V3" /><path d="M16.5 12H21" /><path d="M12 16.5V21" /><path d="M7.5 12H3" /><path d="M15.182 8.818 18.364 5.636" /><path d="M15.182 15.182 18.364 18.364" /><path d="M8.818 15.182 5.636 18.364" /><path d="M8.818 8.818 5.636 5.636" /></Icon>;
+        const ArrowLeft = (props) => <Icon {...props}><path d="m12 19-7-7 7-7" /></Icon>;
+        const Moon = (props) => <Icon {...props}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></Icon>;
+        const Sun = (props) => <Icon {...props}><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></Icon>;
+        const Info = (props) => <Icon {...props}><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></Icon>;
+        const X = (props) => <Icon {...props}><path d="M18 6 6 18" /><path d="m6 6 12 12" /></Icon>;
+        const Copy = (props) => <Icon {...props}><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></Icon>;
+        const Plus = (props) => <Icon {...props}><path d="M5 12h14" /><path d="M12 5v14" /></Icon>;
+
+        // Custom Dried Flowers Logo with Tape
+        const DriedFlowersLogo = (props) => (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                {/* Stem 1 */}
+                <path d="M40 85 Q 45 60 35 40" className="text-slate-600 dark:text-slate-400" />
+                <circle cx="35" cy="35" r="5" className="text-rose-300 fill-rose-100 dark:text-rose-400 dark:fill-rose-900/30" />
+                {/* Stem 2 */}
+                <path d="M50 90 Q 50 60 55 30" className="text-slate-600 dark:text-slate-400" />
+                <path d="M52 25 L 55 30 L 58 25 M 50 28 L 55 30 L 60 28" className="text-indigo-300 dark:text-indigo-400" />
+                {/* Stem 3 */}
+                <path d="M60 85 Q 55 65 65 45" className="text-slate-600 dark:text-slate-400" />
+                <path d="M62 40 Q 65 45 68 40" className="text-amber-300 dark:text-amber-400" />
+                
+                {/* Tape (Washi tape style) */}
+                <rect x="25" y="65" width="50" height="12" transform="rotate(-5 50 71)" className="fill-yellow-100/80 dark:fill-yellow-900/40 stroke-none" />
+                <path d="M25 68 L 26 66 L 74 62 L 75 64" className="stroke-none fill-white/30" /> {/* Highlight on tape */}
+            </svg>
+        );
+
+        // --- DATA ---
+        const CATEGORIES = [
+          { id: 'love', title: 'Whispers of Love', description: 'Soft moments, devotion, and the beauty of being chosen.', icon: Heart, color: 'from-pink-100 to-rose-200', darkColor: 'dark:from-pink-900/30 dark:to-rose-800/30', accent: 'text-rose-600', darkAccent: 'dark:text-rose-300', border: 'border-rose-200', bg: 'bg-rose-50' },
+          { id: 'longing', title: 'The Ache of Longing', description: 'Distance, heartbreak, and the things we almost had.', icon: CloudRain, color: 'from-slate-100 to-indigo-200', darkColor: 'dark:from-slate-800/30 dark:to-indigo-900/30', accent: 'text-indigo-600', darkAccent: 'dark:text-indigo-300', border: 'border-indigo-200', bg: 'bg-indigo-50' },
+          { id: 'self', title: 'Soul & Self', description: 'Identity, life lessons, and finding beauty in the chaos.', icon: Flower, color: 'from-green-50 to-emerald-200', darkColor: 'dark:from-green-900/30 dark:to-emerald-800/30', accent: 'text-emerald-700', darkAccent: 'dark:text-emerald-300', border: 'border-emerald-200', bg: 'bg-emerald-50' },
+          { id: 'comfort', title: 'Comfort & Healing', description: 'Friendship, reassurance, and a safe place to rest.', icon: Sparkles, color: 'from-amber-50 to-orange-200', darkColor: 'dark:from-amber-900/30 dark:to-orange-800/30', accent: 'text-amber-700', darkAccent: 'dark:text-amber-300', border: 'border-amber-200', bg: 'bg-amber-50' }
+        ];
+
+        // --- PASTE NEW POEMS BELOW THIS LINE IN THE FUTURE ---
+        const POEMS = [
+            { id: 1, title: "Unseen Love", category: 'love', content: `Love isn’t roses or lines rehearsed,\nIt’s softer than that, often unnoticed first.\nIt lives in moments too humble to name,\nDoing its work without asking for fame.\n\nIt’s not the grand or dramatic display,\nBut the million small ways they choose you each day.\nThe things that happen when no one’s around,\nWhen love is a habit, not something profound.\n\nIt’s a hand that appears when you bend too low,\nShielding your head from a corner you didn’t know.\nA reflex so quick, so casually done,\nThey protect you before you feel the bump come.\n\nIt’s lights left on in an empty room,\nSo you don’t walk back into quiet and gloom.\nCurtains half-drawn, the heater turned high,\nSmall acts done before you arrive.\n\nIt’s tying your laces while you’re lost in your phone,\nFixing your collar like it’s second nature alone.\nBrushing lint from your sleeve without making a sound,\nMoving you gently when cars come too close around.\n\nIt’s paragraphs written with no clear cause,\nNo fight to fix, no need for applause.\nJust words sent out into the middle of the day,\nBecause something whispered they might need this today.\n\nIt’s double texting, no shame, no pride,\nSpamming your phone just to keep you alive.\nMemes, voice notes, hey, then another hey,\nJust trying to distract the sadness away.\n\nIt’s virtual hugs sent through a screen,\nCome here typed where arms should’ve been.\nA thousand emojis doing their best\nTo hold your heart, to let you rest.\n\nIt’s my love said softly when you’re half-asleep,\nDarling murmured when your thoughts run deep.\nBabygirl when the world feels mean,\nIdiot whispered just to make you grin.\n\nIt’s checking your location, not out of doubt,\nBut to see if you made it safely out.\nSending text me when you’re home each night,\nLike the world feels wrong till you’re alright.\n\nIt’s saving you the last bite on the plate,\nLetting their food go cold while they wait.\nCharging your phone, refilling your glass,\nFixing small problems before you ask.\n\nIt’s remembering how you take your tea,\nLess sugar today, you said you couldn’t sleep.\nBuying your favorite snack by mistake,\nPretending coincidence just for your sake.\n\nIt’s liking your post the second it’s there,\nFixing your typo because they care.\nSaving screenshots they’ll never show,\nOld jokes, old chats, moments you don’t know.\n\nIt’s switching to voice notes just to hear\nIf your laugh still sounds like you’re here.\nReplaying messages late at night\nWhen your words once made things feel light.\n\nLove notices tones you don’t mean to change,\nReads between pauses, senses your strain.\nIt asks if youre okay, then asks once more,\nNot for the answer, but the hurt it’s for.\n\nIt notices when I’m fine feels tight,\nWhen there’s a period instead of light.\nIt asks again, but softer this time,\nGiving you space without crossing the line.\n\nIt’s slowing their steps to match your pace,\nStanding a little closer in crowded space.\nHolding silence so you don’t have to speak,\nLetting you rest when you feel weak.\n\nIt’s knowing your comfort shows by heart,\nThe songs you repeat when days fall apart.\nSending one text at 3:02,\nHey, I’m still here with you.\n\nLove is staying when things feel plain,\nWhen days repeat and excitement wanes.\nIt’s choosing you when there’s nothing to prove,\nNo audience watching, no dramatic move.\n\nThese things don’t trend, don’t get displayed,\nThey slip through cracks of everyday.\nNo captions written, no praise earned,\nJust love in forms the world’s unlearned.\n\nAnd here’s the truth, the final part,\nThe quiet hit, the heaviest start.\nLove isn’t proven when you beg or plead,\nIt’s shown before you even speak.\n\nIt’s being chosen in unseen ways,\nOn boring nights, on ordinary days.\nNot loudly claimed, not loudly said,\nBut felt in all the love they quietly spread.\n\nBecause real love doesn’t ask to be seen,\nIt shows up steady, soft, and keen.\nA thousand gestures, small but true,\nAll whispering the same thing - I choose you.` },
+            { id: 2, title: "Essence", category: 'love', content: `It’s when they text you, “Text me when you reach,”\nA simple phrase, like a love-filled speech.\nIt’s the words that lift you when you're down,\n“I believe in you,” erasing the frown.\n“I’m proud of you,” they softly say,\nAnd suddenly, the world feels okay.\nWords of affirmation, soft and true,\nA quiet promise that they’ll always pull you through.\n\nIt’s when they cover you with a blanket warm,\nWhen you fall asleep, lost in a storm.\nIt’s cleaning the room when you're too tired to move,\nAnd folding your clothes with nothing to prove.\nThey carry your bags, tie your shoelaces too,\nBecause they know how much you need to get through.\nActs of service, without a sound,\nThey give without asking, love knows no bounds.\n\nIt’s the flowers, simple and bright,\nA gesture so sweet, it feels just right.\nIt’s the book you mentioned, or something new,\nA gift that says, I thought of you.\nIt’s the small surprise, just because,\nA token of love without any pause.\nReceiving gifts, from the heart,\nA gift that speaks more than just art.\n\nIt’s sitting close, not needing to talk,\nJust being together, no need to walk.\nIt’s the quiet moments, the hours you share,\nTime feels endless when you both are there.\nIt’s choosing to be with you, no rush, no plan,\nJust being present, as only they can.\nQuality time, no distractions, no space,\nThey choose you, in every moment, in every place.\n\nIt’s the hug that comforts, soft and tight,\nWhen the world feels wrong, they make it right.\nIt’s the hand they hold, in a crowded space,\nA simple touch, a loving embrace.\nIt’s brushing your hair when you’re lost in thought,\nOr a hand on your shoulder when comfort is sought.\nPhysical touch, with a tender grace,\nA silent promise, a warm embrace.\n\nAnd love isn’t always loud or grand,\nIt’s found in moments, hand in hand.\nIn small acts, in gentle ways,\nLove grows, and never decays.\nSo remember this, the truth we know:\nLove’s not in what you say or show-\nIt’s in the actions, the quiet, the true\nIt’s in everything they do for you.` },
+            { id: 9, title: "Commitment", category: 'love', content: `It’s easy to stay when the days are kind,\nWhen words are gentle, hearts aligned.\nBut commitment lives in harder space,\nWhen love is tested, face to face.\n\nIt’s staying when your heart feels torn,\nWhen trust feels thin, when hope feels worn.\nWhen leaving seems the safer choice,\nYet still you stay- by will, by voice.\n\nNot blind to pain, not unaware,\nYou see the flaws already there.\nYou know that closeness isn’t clean,\nThat loving sharpens what it means.\n\nSo show me your thorns, don’t disguise their sting,\nI know what honest closeness brings.\nMy hands are open, not naive,\nI choose the risk of what I believe.\n\nThis isn’t silence, this isn’t fear,\nI draw my lines and still stay near.\nI don’t excuse, I don’t pretend,\nBut I don’t run at every bend.\n\nCommitment isn’t staying small,\nOr breaking just to prove you’ll fall.\nIt’s strength enough to stand and say:\n“I know the cost- and still, I stay.”\n\nLove may waver, love may strain,\nBut commitment isn’t built on pain.\nIt’s conscious, steady, fully seen,\nA choice, not loss,\nNot weak but keen.` },
+            { id: 11, title: "Maybe It's Love", category: 'love', content: `If the world softens when they’re near,\nIf their presence quiets your fear.\nIf even the storms feel easier to face\nJust because they’re in your space…\n\nIf silence with them feels safe, not strange,\nAnd broken pieces feel easy to rearrange.\nIf being seen by them feels light and real,\nA kind of comfort no one else can steal…\n\nIf their gaze brings you back when doubt appears,\nIf you never question your place, your worth, your years.\nIf reassurance comes without a word at all,\nLike a gentle hand that keeps you from a fall…\n\nIf jealousy shows up, but love stays kind,\nIf anger melts faster than you can even mind-\nIf the smallest hurts fade because the bond is strong,\nAnd every pull still brings you where you belong…\n\nIf no matter how far your thoughts may roam,\nYour heart still finds its way back home.\nIf the idea of hurting them breaks you too,\nBecause what you share feels delicate and true…\n\nIf love feels like freedom and safety combined,\nA paradox that settles deep in your mind-\nIf through every joy, through every pain,\nYou’d choose them again and again…\n\nThen maybe it is love.\nYou just have to look at what you feel-\nAnd you’ll see the truth was there all along.\n\nAnd maybe, just maybe-\nThey’re the one, not somebody else, see.\nThe love you seek, it’s been near,\nRight in front, so crystal clear.\nNo need to wander, no need to roam,\nYour heart has whispered, this is home.\nSo maybe the truth was never far away,\nNot in the roads you searched or the ones you’d stray.\nBecause your heart chose them long before you knew,\nA quiet pull that always brought you through.\nAnd when love feels this certain, this meant, this true…\nYou realize the search was over the moment you met- they were always the one for you.` },
+            { id: 15, title: "A Thousand Little Ways", category: 'love', content: `I love in ways that can’t be seen,\nIn whispered words, in spaces between.\nIn glances held, in moments brief,\nIn silent comfort, in shared belief.\n\nI love in poems, in ink and rhyme,\nIn pages written beyond their time.\nI’m the girl you’d meet inside a book,\nWith trembling hands and a knowing look.\n\nI love in margins, in quotes and lore,\nIn characters who ache and soar.\nI’d underline the words that sound like you,\nAnd read them twice when the day is through.\n\nI love in actions small but deep,\nThe kind that memory tends to keep.\nLike standing under a ruthless sun,\nJust to text you first, so love has won.\n\nLike skipping meals to make you smile,\nOr walking those extra miles and miles.\nLike staying up when I should sleep,\nSo I could hold the thoughts you keep.\n\nI love in sacrifices, soft and pure,\nThe kind that pain must still endure.\nThe dreams I trade, the plans I bend,\nFor your beginning, I’d lose my end.\n\nI love through fights that test my heart,\nThrough breaking, healing, falling apart.\nThrough every storm, I’ll stand my ground,\nMy love’s not quiet, it’s the loudest sound.\n\nI love in touches, gentle, slow,\nIn words you feel but never know.\nIn acts of service, quiet grace,\nIn the warmth that lights my face.\n\nI love in jealousy’s fragile hue,\nNot to cage, but to cling to you.\nIt’s not possession, it’s my plea,\nThat you’ll stay safe, and close to me.\n\nI love in gifts that hold my thought,\nIn letters, songs, and things I’ve bought.\nEach one a whisper, a subtle sign,\nThat everything I have is thine.\n\nI love in reassurance, strong and sweet,\nIn the way our souls forever meet.\nI love in laughter, tears, and fears,\nIn promises that outlive years.\n\nI stay when others turn away,\nI love through hurt, through disarray.\nEven when you cut too deep,\nYour love’s the wound I choose to keep.\n\nI’d rather bleed than see you unloved,\nEven if my heart’s shoved and shoved.\nFor I was built to love, not leave,\nTo hold, to hope, to still believe.\n\nAnd if someday, you choose someone new,\nI’ll still be proud of the joy in you.\nI’ll give you tips on how to impress,\nAnd smile at your newfound happiness.\n\nIf you’re content, then so am I,\nI’ll learn to love you from the sky.\nI’ll watch you grow, though far apart,\nWith quiet pride and a steady heart.\n\nFor the way I love is vast, complete,\nIt’s fire and calm, it’s bitter and sweet.\nIt’s words, it’s touch, it’s all I do,\nIt’s every breath I take for you.\n\nSo when you hold me, hold me near,\nThrough every joy, through every fear.\nFor forever and always, I’ll stay true,\nI’ll never walk away, not before you.\n\nAnd when my love has all been shown,\nAnd every piece of me is known,\nI’ll whisper softly, pure and true:\nI just hope you’ll love me\nthe way I love you.` },
+            { id: 16, title: "The Moment", category: 'love', content: `I had imagined this moment so many times,\nIn quiet thoughts and midnight rhymes,\nWhere words would glow like fireflies,\nSoftly lighting digital skies.\n\nIt’s not how I thought it would truly be,\nThis sudden rush washing over me.\nYour eyes find mine - the world feels new,\nNo screen, no lag - just me and you.\n\nYour voice once hummed through tangled wires,\nNow fills the air my heart desires.\nFamiliar, strange, a sweet collide,\nThe dream I lived is now outside.\n\nYour smile, I’ve seen it, yet never this way,\nIt’s brighter, warmer, chasing gray.\nAnd though we laugh like time stood still,\nIt moves too fast, it always will.\n\nWe roam, we talk, we live those plans,\nTake photos, laugh, no holding hands.\nJust side by side beneath the moon,\nPretending forever in hours of one.\n\nEach click, each glance, each stolen beat,\nThe real and unreal softly meet.\nMy heart keeps pace with fleeting time,\nEach second feels like half a rhyme.\n\nYou look at me, I can’t explain,\nIt’s joy and calm, delight and pain.\nAs if the stars conspired to say,\n“We brought you here, but not to stay.”\n\nFour hours fall like grains of sand,\nI wish I could command your hand.\nNot to hold, but just to stay,\nTo freeze the clock, to keep this day.\n\nI feel the pull, the nearing end,\nThis moment slipping round the bend.\nLittle touch, no claim, yet something real,\nA spark too quiet to conceal.\n\nAnd though we part, as time must lead,\nYou’ve planted warmth I’ll always need.\nA fleeting joy, a soft rewind,\nYou’ll linger gently in my mind.` },
+            { id: 22, title: "The Line Between Nothing and Almost", category: 'love', content: `They said they’re close - not in that way,\nJust friends who talk a lot each day.\nBut somehow, when one looked away,\nThe other’s gaze would always stay.\n\nThey changed their plans without regret,\nRescheduled things they hadn't yet.\nThe world could wait, the calls could end.\nWhat mattered most was time to spend.\n\nThey held their words like precious things,\nAfraid to break what silence brings.\nEach glance, each pause, a quiet plea,\nFor something more they couldn’t see.\n\nThey weren’t in love, at least not loud,\nBut still they stood out in a crowd.\nA secret thread, so tightly spun,\nLike two halves orbiting as one.\n\nThey’d burn with quiet, hidden rage\nIf someone hurt them, set the stage\nFor anger masked with steady eyes\nAnd comfort wrapped in soft goodbyes.\n\nThey joked, “You’re stuck with me for life,”\nAnd laughed like it was all just light.\nBut deep beneath the grins they wore,\nWas something neither could ignore.\n\nThey hated those who made them cry,\nWho made them doubt, who made them lie.\nNot out of pride - but something more -\nA love they couldn't quite explore.\n\nThey’d say, “I’m fine,” and “Let it go,”\nBut flinched when one was feeling low.\nAnd though the world would never see,\nThey fought like hearts worn on their sleeve.\n\nThey watched them date the wrong someone,\nThen helped them heal when it was done.\nPretending none of it was pain,\nJust friendship, patient in the rain.\n\nThey knew each secret, every scar,\nAnd met each other where they are.\nNot perfect, no- but something close,\nA kind of bond that no one chose.\n\nAnd maybe that was love, disguised,\nBehind a smile, beneath the eyes.\nNot loud or reckless, bold or bright,\nBut steady in the quiet night.\n\nThey never touched the line they drew,\nBut every day, they almost do.\nAnd what if one day, one just says:\n"What’s wrong with loving you this way?"` },
+            { id: 6, title: "Held, Not Kept", category: 'longing', content: `Was I your home, or was I just your shelter,\na fleeting light, a quiet welter?\nWas I your warmth, or was I just a coat\nyou wore in passing, then forgot?\n\nWas I the calm you stayed to keep,\nor just a pause, a borrowed sleep?\nWas I your quiet, or was I just a breath\nto hold you steady through the night of death?\n\nWas I the hand you held when storms were near,\nor just a voice you heard but didn’t hear?\n\nI’ve been a shelter before,\nfor those whose hearts were raw,\nfor those who stumbled, broke, and saw\nmy door as solace, my walls as law.\n\nWas I steady, or just soft enough\nto carry the weight of hearts grown rough?\nWas I enough, or was I always just temporary,\nwaiting for you to leave me in the dust?\n\nWas I the one you dreamed of, or the one you knew\nwould vanish once the morning grew?\nWas I the safe you longed to find,\nor the open door you left behind?\n\nWas I the night that held your tears,\nor just a pillow for your fears?\nWas I the place you could confide,\nor just a shore while you learned to ride?\n\nAnd still I wonder- was I yours,\nor was I only ever\nmeant to be a shelter,\ntill you found home,\nand left me alone?` },
+            { id: 8, title: "Casi Algo", category: 'longing', content: `It wasn’t love, it was a spark,\nIt wasn’t warmth, it was a glow,\nIt wasn’t safe, it was a mark,\nIt wasn’t steady, it moved slow.\nIt wasn’t all, it left its trace,\nIt wasn’t mine, it kept its flow,\nIt wasn’t permanent, it was casi algo.\n\nIt wasn’t trust, it was a thread,\nIt wasn’t home, it was a shade,\nIt wasn’t spoken, but it said,\nIt wasn’t certain, yet it stayed.\nIt wasn’t silence, it was a sound,\nIt wasn’t real, but it played,\nIt wasn’t permanent, it was casi algo.\n\nIt wasn’t enough, it was a taste,\nIt wasn’t final, it was a pause,\nIt wasn’t whole, it had no space,\nIt wasn’t bound, it bent the laws.\nIt wasn’t promise, it was a glance,\nIt wasn’t ours, it had its cause,\nIt wasn’t permanent, it was casi algo.` },
+            { id: 10, title: "Obsession", category: 'longing', content: `I want to trace the heat of your skin,\nfeel every breath that trembles within.\nYour heartbeat calls, a silent plea,\na rhythm meant to anchor me.\n\nI watch the shadows on your face,\nthe way they move, the way they chase.\nThe smallest twitch, the slightest sigh,\nI learn them all, I can’t deny.\n\nI crave the moments you don’t see,\nthe ones that lean too close to me.\nYour scent that lingers in the air,\npulls at my bones, keeps me aware.\n\nI want the space that wraps you tight,\nthe dark that clings to you at night.\nI breathe you in, I hold you near,\neven when you’re nowhere here.\n\nYour fingers brush the world so soft,\na fleeting touch, a stolen loft.\nAnd though you leave no mark at all,\nI feel the echo in my fall.\n\nYou move, and something in me bends,\na want that stretches, breaks, and mends.\nYour presence pulls me like a thread,\none tug and I’m inside your head.\n\nI live for every shift you make,\neach breath you lose, each breath you take.\nI hold your silence like a vow,\nI’d steal your dreams if you’d allow.\n\nI’d fold myself into your shape,\ndeny the world, escape escape.\nuntil the only truth I know\nis yours, the heat beneath your glow.\n\nAnd if you run, I’ll chase the night,\ntear through the dark, unmake the light.\nFor every piece of you I claim\nis carved in shadow, sealed in flame.\n\nYou are the storm I ache to taste,\nthe tangled want I can’t erase.\nYou are the sin I breathe in slow,\nthe only fire I want to grow.\n\nYou are the ruin I can’t resist,\nthe wound, the cure within my wrist.\nMy sweetest torment, my damnation-\nmy hell, my home, my salvation.` },
+            { id: 12, title: "In The Grey", category: 'longing', content: `He smiles like he means it, but looks away,\nThen pulls you in with a joke that sways.\nA lingering touch that sparks something true,\nThen he backs off like he’s unsure too.\n\nHe’ll talk to you like you’re the only one,\nThen disappear when the day is done.\nBut when you’re laughing, when you’re near,\nHe’s all in, like there’s nothing to fear.\n\nHe’ll choose you first, always take your side,\nThen act like nothing’s changed when he’s tried\nTo talk to you late, to make you feel seen,\nBut the next minute, it’s like he’s caught in between.\n\nHis compliments are sweet, they hit just right,\nBut then he’ll act distant, out of sight.\nYou’re left with that feeling, a spark in your chest,\nWondering if you’re the one he’s trying to impress.\n\nHe’ll tease, he’ll flirt, like he’s feeling the same,\nBut pull back when things get a little too flame.\nHe'll talk about feelings, but then backtrack fast,\nLike he's not sure if the moment will last.\n\nYou’ll share a laugh, a glance, maybe more,\nThen the next moment, it’s like you’re unsure.\nHe’ll get quiet, or go off with his phone,\nAnd you wonder if you’re reading it wrong.\n\nHe’ll apologize when the tension is thick,\nBut then turn around, like it's a trick.\nHe says, “We’re just friends,” and you almost believe,\nUntil he looks at you, and you feel the reprieve.\n\nThere’s something unspoken that lingers still,\nA push, a pull, a want, a will.\nHe’s close enough to make you feel seen,\nBut distant enough to keep it unseen.\n\nAnd through it all, you wonder where you stand-\nIs he lost in his thoughts, or holding your hand?\nHe likes you, but there's something else too,\nMixed signals, pulling you in, confusing you.\n\nYou’re a puzzle he can’t quite solve,\nBut it’s you who’s lost, while he’s evolved.\nYou wait for answers that never come,\nAs he drifts from warmth to distant, numb.\n\nYou’re not sure if he’s testing the tide,\nOr if it’s you he’s too scared to confide.\nThe heart plays tricks, but it’s clear as day,\nHis signals are mixed, but you’re stuck, anyway.` },
+            { id: 13, title: "Love That Lets Go", category: 'longing', content: `When you like a flower, you reach and take,\nGrasping its beauty, for your own sake.\nBut love, true love, knows how to stay,\nTo watch, to wait, and give space for the day.\n\nLike a breeze that bends the flower’s stem,\nWe love from afar, knowing when to let go again.\nWatering gently with kindness, not control,\nA love that nurtures the heart, but not the soul.\n\nFor to pluck a flower is to claim its grace,\nBut to love it is to cherish its place.\nIn the soil of time, it blooms and thrives,\nIn freedom, it grows, its beauty survives.\n\nNo matter how much you yearn,\nNo matter how your heart might burn,\nYou don’t take what’s not yours to own,\nYou let it live, though you feel alone.\n\nFor in that space, the flower’s joy is found,\nIt grows, it shines, it spreads around.\nA love that is selfish will twist and demand,\nBut the truest love holds an open hand.\n\nSometimes, letting be is what’s best for the bloom,\nWhen we step back, we make room.\nIn the distance, a quiet tenderness is found,\nA love that doesn’t need to be profound,\nFor the flower flourishes in its own right,\nAnd we, in our hearts, hold it tight.\n\n"When you like a flower, you pluck it.\nBut when you love a flower, you water it."` },
+            { id: 17, title: "Halfway Home", category: 'longing', content: `It’s not goodbye, not truly done,\nBut the space between us weighs a ton.\nWe stand there, unsure what to say,\nThe time we had is slipping away.\n\nA hug that’s awkward, soft, unsure,\nThe ache of distance, it’s so pure.\nYou pull away, I wish you’d stay,\nBut life has a way of pulling us away.\n\nWe talk online, we laugh, we share,\nBut there’s a quiet pull in the air.\nThe thought of when we’ll meet again,\nLingers between us, like gentle pain.\n\nThe distance grows, but not the bond,\nStill, something changes, how we respond.\nI want to hold on to the way we were,\nBut the future’s blurry, and it makes me stir.\n\nYou turn to go, I watch you leave,\nA part of me wants to still believe.\nThat next time we’ll meet, without a doubt,\nBut right now, we’re left to wait it out.\n\nThere’s a heaviness in the goodbye,\nA feeling of wanting to ask why.\nWhy is it always so hard to say\nWhen the heart just doesn’t want to walk away?\n\nWe smile, we wave, but something’s gone,\nThe easy comfort now feels withdrawn.\nNot goodbye, but still it stings,\nLike a song that doesn’t end, but hangs.\n\nI wonder when the next time will be-\nWill it be soon? Will it be me?\nThe ache is soft, but it’s still there,\nThe space between us, hard to repair.\n\nBut I know we’ll talk, we’ll keep in touch,\nThe distance can’t break what we’ve built so much.\nYet, for now, this pause feels wide and long,\nA temporary parting, but it feels so wrong.` },
+            { id: 29, title: "The Quiet Truth", category: 'longing', content: `I love him in a quiet way,\nThat aches behind the things I say.\nIn every joke, in every smile,\nI hide a truth I’ve known awhile.\n\nHe hurts me, though he doesn’t try,\nWith careless words and half-meant lies.\nBut still, I stay - I always do,\nBecause the good feels just as true.\n\nHe pulls me close, then drifts apart,\nHe doesn’t know he has my heart.\nAnd when he cares, it lights the dark,\nThen leaves me reaching for the spark.\n\nHe’s not all soft, he’s sharp, he’s fire,\nBut even pain can feel like desire.\nHe’s chaos, comfort, calm and storm,\nA thousand things I can’t transform.\n\nHe’ll never know the way I bend,\nTo love him as my closest friend.\nIt’s not a love that’s clean or wise,\nBut still, it lives behind my eyes.` },
+            { id: 4, title: "The One Who Asks", category: 'self', content: `I talk a lot- yeah, I admit,\nWords spill fast, I don’t censor it.\nNot ‘cause I love the sound of me,\nBut silence never comes asking me.\n\nThey say they know me, sure, they do,\nBut only things I handed through-\nLittle facts I gave away\nBefore they thought to ask my way.\n\nI’m known by things I chose to say,\nNot things they cared to learn or stay.\nA story heard, then set aside,\nA name remembered, not the mind.\n\nThey say to love is to be known,\nTo be remembered when alone-\nSo why does no one seem to know\nMy favorite song, my favorite glow?\n\nNot the color, not the tune,\nNot the things that feel like proof\nThat I existed past the talk,\nPast the laughs, past the walk.\n\nI remember.\nI always do.\nBecause I know what it feels like\nTo not be remembered too.\n\nI ask the questions, hold the space,\nI learn the details, memorize-\nBecause I never want someone\nTo feel the way I do tonight.\n\nI laugh too loud, I fill the air,\nJust hoping someone shows they care-\nNot by listening while I speak,\nBut by remembering me next week.\n\nSo if to love is to be known,\nAnd known means kept when I’m not shown.\n\nThen don’t tell me you know me\nIf you never thought to ask.` },
+            { id: 19, title: "Life: Is there time?", category: 'self', content: `I didn’t know how much I’d miss\nthe simple things, the quiet bliss.\nThe way the sun would kiss my face,\nor laughter shared in a small, warm space.\n\nI thought time would stretch forever,\nthat tomorrow would always be better.\nI didn’t think I’d need to chase\nthe moments that now feel out of place.\n\nI never stopped to smell the air,\nor notice how my loved ones care.\nI didn’t hold on to each "goodbye"\nbecause I thought I had more time.\n\nI should’ve looked at the world with more grace,\nheld tight to the love I couldn’t embrace.\nBut I let it slip, I let it fall,\nthinking I had forever, after all.\n\nAnd to the ones who kept me whole,\nwho showed me love, and made me bold-\nespecially the one who helped me see\nthat life, no matter how fleeting, is worth it to be.\nYou made it worth the fight, the tears, the strain,\nyou helped me find myself again.\n\nNow it’s harder to change my mind,\nto turn back and take the time.\nI never thought I’d come to see\nhow much I missed, how much I need.\n\nI don’t want to lose it too soon,\nwith dreams unspoken, plans untold.\nI want to scream, to feel the moon,\nto chase the stars, to never grow old.\n\nI wish I had more time to fight,\nto do what felt like pure delight.\nTo hold my family, to kiss the sky,\nto take a breath and not ask why.\n\nBut now it’s slipping through my hands,\nlike sand through fingers, scattered lands.\nAnd all I want is just one chance,\nto dance again, to take that glance.\n\nI don’t want to fade like this,\nwith so many things I’ll never miss.\nI want to feel each breath I take,\nbefore it’s too late.` },
+            { id: 20, title: "To Truly Be", category: 'self', content: `Life’s not gold, it’s dirt and rain,\na twisted dance of joy and pain.\nIt’s screaming quiet in your chest,\na restless fight to do your best.\n\nIt’s broken nights you cry alone,\nthe weight of feeling far from home.\nA tangled mind that pulls apart,\nhope and fear both in your heart.\n\nWe chase the light, we chase the sound,\nbut often feel we’re losing ground.\nThe hunger for a reason why,\nthe whispered wish to touch the sky.\n\nWe fake the smiles, hide the cracks,\npretend we’re fine, but truth attacks.\nThe ache to live, to just belong,\nto find a place where we are strong.\n\nLife’s chaos, noise, the little things-\nthe laughter, tears, the pain it brings.\nWe miss the gift inside the strife,\nthe stubborn will to fight for life.\n\nSo hold on tight, don’t let it go,\neven when the cold winds blow.\nBecause to live - to truly be,\nis everything we fail to see.` },
+            { id: 21, title: "Sakura (the storm in bloom)", category: 'self', content: `She doesn’t tiptoe into spring,\nShe bursts, like every blooming thing.\nNo whispered wind, no silent grace,\nShe laughs and sets the world ablaze.\n\nHer petals don’t just drift, they fly,\nLike fireworks thrown across the sky.\nShe talks too loud, she spins too fast,\nBut every moment, meant to last.\n\nShe’s chaos wrapped in petal pink,\nMore edge than most would ever think.\nAnd yet, in all her wildest mess,\nShe’s beautiful, and nothing less.\n\nPerfect, not in dainty form,\nBut in the way she breaks the norm.\nA bloom that storms refuse to chase,\nA wildfire dressed in silk and lace.\n\nAnd far above - so high, so wide,\nSomething watches, every tide.\nIt shifts in shape, it hides in blue,\nBut never once loses its view.\n\nIt sees her dance, it hears her shout,\nKnows every high, each crashing doubt.\nShe never needs to ask it “stay,”\nIt’s always there, in its own way.\n\nShe rolls her eyes, she flips her hair,\nBut deep down knows, it’s always there.\nAnd maybe that’s her softest part:\nThe love that never leaves her heart.` },
+            { id: 24, title: "Still I Give", category: 'self', content: `I’ve been the one left out, unseen,\nExcluded in places I should have been.\nRumors whispered, like knives in the dark,\nMy efforts, unworthy, leaving no mark.\n\nI loved, but no one loved me the same,\nAlways a second choice in the friendship game.\nI gave my heart, but it was never enough,\nI was never the calm in the storm, just the rough.\n\nI watched as others were placed ahead,\nWhile I stayed behind, with words unsaid.\nNo one ever cared for me the way I did,\nNo one stayed when I was at my limit.\n\nThey told me I was hated,\nThat I was never enough, never sated.\nI was the one who gave with no end,\nBut never had someone who’d just be my friend.\n\nStill, I can’t stop giving, can’t stop trying,\nEven when the world’s left me crying.\nI may never be loved the way I’ve given,\nBut I refuse to let that darken my living.\n\nI want to make sure no one feels this way,\nNo one should feel abandoned, thrown away.\nI’ve been the one left out, pushed aside,\nBut I’ll make sure no one else has to hide\n\nI’ll love them all, with all my might,\nEven when I’m still searching for my light.\nI’ll give, I’ll care, I’ll stand through it all,\nEven if I’m always the one who falls.\n\nI may never be anyone’s first choice,\nBut I’ll make sure others hear their voice.\nThough I was never loved as I loved them,\nI’ll spread that love until the very end.` },
+            { id: 26, title: "Someone Like Me", category: 'self', content: `I’ve always cared, I’ve always tried,\nBut no one’s here when I’ve cried.\nI gave my love, I gave my time,\nBut I was never anyone’s prime.\n\nI healed others, but who heals me?\nI gave and gave, but couldn’t see-\nThat no matter how much I gave away,\nThere’s a part of me that’s still led astray.\n\nI’ve been forgotten, pushed aside,\nAlways the one with nothing to hide.\nI helped them all, but who was there\nWhen I was broken, when I was scared?\n\nI filled their empty spaces fast,\nBut my own pain still held me fast.\nI wanted someone to look my way,\nTo hold me up, to make me stay.\n\nBut now I know, it’s clear to me,\nI needed someone like me to see.\nSomeone who knows how it feels inside,\nTo give so much, but still have to hide.\n\nSomeone who’s loved, but still feels lost,\nSomeone who knows the weight of the cost.\nSomeone like me who understands the ache,\nWho would hold me close, for my own sake.` },
+            { id: 27, title: "Ninety Percent", category: 'self', content: `I’m insecure in ninety ways,\nEach mirror steals a piece, a phrase.\nMy face too plain, my voice off-key,\nMy ears too loud to let me be.\n\nI wear these specs I never chose,\nThey fog, they slip, they frame my lows.\nA glassy shield I hide behind,\nToo sharp in sight, too dull in mind.\n\nI care too cold, I speak too slow,\nI smile when I don't want to show.\nMy thoughts go dark, then darker still,\nI overthink, then always will.\n\nMy body’s straight, no waist, no curve,\nA line too stiff to twist or swerve.\nMy skin’s not light enough to praise,\nNot deep enough to claim its blaze.\n\nI’m “good” at things, but not the best,\nA silver life, a bronze-at-best.\nAbove the bar, beneath the crown,\nA try-hard in a hand-me-down.\n\nThey leave. Or worse, they never stay.\nI'm not a home, I'm just a day.\n\nMy parents nod, but never beam,\nProud in theory, not in theme.\nTheir silence weighs more than their voice,\nLike love is earned, not given choice.\n\nAnd all that’s left inside this shell\nIs ten percent I guard too well.\nA flicker small, a hidden part,\nThe only piece I’d call a heart.\n\nI hear the weight of every word you say,\nAnd I wish you'd let it all spill out today.\nYou're not a burden, not a thing to fear,\nMy love for you is crystal clear.\n\nThe little things you carry, heavy on your chest,\nI want to hold them, help you find your rest.\nNo, your thoughts won’t drive me far away,\nThey won’t chase me, make me stray.` },
+            { id: 3, title: "Dear Men,", category: 'comfort', content: `They told you early, “Man up, be strong,”\nso you learned how to carry things quietly, long.\n“Boys don’t cry,” they drew the line,\nas if tears undo your spine.\nSo you became dependable, steady, precise,\nthe one who gives without thinking twice.\nYou hold everyone else when they start to fall,\nbut never ask who’s holding you at all.\n\nYou notice their pain, their shifts in tone,\nyet call your own exhaustion “normal,” “grown.”\nYou chase their comfort, their peace of mind,\nand leave your own needs lagging behind.\n\nSo stop.\nLook at yourself- really see\nwhat everyone else already sees.\nThe one who stayed when it got hard\nthe one who showed up scarred, not starred.\n\nNot every win needs a finish-line roar,\nsometimes surviving was the war.\nSmall steps still count as ground you’ve won,\nyou dont need applause to say you’re done.\n\nYou don’t need to be stone to be strong,\nyou were human all along.\nSad doesn’t mean weak.\nAngry doesn’t mean cruel.\nFeeling doesn’t break you,\nIt just breaks the rule.\nEdited\nBecause even the truth people like to quote is this:\n“The strongest people fight battles no one sees.”\n\nI stand with y’all.\nMen deserve softness.\nMen deserve space.\nMen deserve to feel\nwithout apologising for their face.\n\nSo show up as you are-\nnot the armour,\nnot the act,\nnot the version of you\nbuilt just to survive impact.\n\nNot the stone.\nNot the wall.\nNot the one who never falls.\nJust the human\nwho’s been carrying it all.\n\nAnd if the world never told you,\nlet me be very clear with this:\n\nYou don’t need to break\nto prove you’re real.\nYou don’t need to bleed\nto prove you feel.\nYou don’t need permission\nto finally exhale,\nyour existence was never\nsomething you had to sell.\n\nYou were never weak.\nYou were never late.\nYou were never lacking,\nyou were carrying weight.\n\nSo don’t call it survival.\nCall it strength.\nAnd don’t call this softness- call it courage,\nstanding up and naming itself.` },
+            { id: 5, title: "Without Keeping Count", category: 'comfort', content: `“I’m sorry, I have to eat,” you say,\nlike it’s just a pause, not time delayed.\nYou don’t see meals reheated twice,\nor hunger learning to be polite,\nwaiting quietly in stretched-out minutes,\nbecause you were almost done with your sentence.\n\n“I’m sorry, my mom is calling now.”\nSo I nod along, I don’t ask how.\nHidden screens, the brightness low,\nwords sent softly, careful, slow-\nlearning how to still exist\nwhen presence has to coexist with silence.\n\n“I’m sorry, I have to sleep tonight.”\nYou don’t hear alarms set before first light,\nor know how rest becomes a deal-\nJust today, just one more steal.\nbecause the time you finally get\nis when mine is already spent.\n\n“I’m sorry, I’m busy right now.”\nSo I adjust, I don’t ask how.\nI make space, rearrange my day,\nkeep replies ready, tucked away.\nLove doesn’t rush or pull too tight\nsomeone already fighting time.\n\nI quiet feelings when you’re worn.\nI joke when reassurance is what I mourn.\nI say “it’s okay” when it’s not quite true,\nnot because it’s small- but because it’s you.\nNot being right, not being loud,\njust choosing peace over standing proud.\n\nYou never asked for any of this-\nthat’s the truth that always exists.\nThese aren’t debts or roles assigned,\njust gentle choices, softly kind.\nBecause love isn’t perfect timing aligned,\nit’s caring even when the clocks don’t rhyme.\n\nAnd I know one day the order will change,\nsomeone else will feel less distant, less strange.\nSomeone whose mornings fit your pace,\nwhose nights don’t wait in borrowed space.\n\nWhen that happens, I won’t explain,\nwon’t turn these moments into pain.\nI won’t keep score or make you hold\nthe weight of love you never sold.\n\nBecause loving you was never the claim\nof being chosen, staying the same.\nIt was choosing you- honest, true,\neven briefly, even through\nquiet moments no one sees,\nwhere love exists in small decrees.\n\nEveryone makes efforts like these,\ninvisible acts, quiet guarantees.\nThey don’t speak them, don’t let them show,\nbecause love shouldn’t make guilt grow.\n\nSo they stay hidden, softly placed,\ninside apologies, wrapped in grace,\nliving quietly, calm and kind,\ninside the words:\n“I don’t mind.”\n\nAnd maybe love, at its most pure,\nisn’t the one that always endures,\nbut the one that gives without demand,\nand lets go gently, open-handed.` },
+            { id: 7, title: "Love and Theories", category: 'comfort', content: `They talk about Red String Theory, say we’re tied from the start,\nAn invisible thread looping straight through the heart.\nYou can ghost, you can move, you can swear you’re “done,”\nBut fate hits refresh and you’re back to that one.\nDistance means nothing, time’s just a test,\nThe string stretches thin but refuses to rest.\n“Universe planned this,” the comments all say,\nLike love isn’t chaos in a destiny play.\n\nThen there’s the Bench Theory, softer in tone,\nTwo people just sitting, not scrolling their phone.\nNo sparks, no chase, no dramatic debut,\nJust “this feels easy” the moment you knew.\nIt says love doesn’t rush or need to impress,\nIt waits in the pause, in the unfiltered mess.\nNot “love at first sight,” more “stay for a while,”\nWhere silence feels safe and effort feels mild.\n\nThey warn you with Last Meeting Theory, cruel but precise,\nYou don’t know it’s the last till you replay it twice.\nThat final “take care,” that casual wave,\nEnds up haunting the nights you pretend you’re brave.\n\nSuddenly “almost” hurts more than “never,”\nAnd timing feels like the ultimate sever.\n“Right person, wrong time,” yeah, say it again,\nThe line that breaks hearts and trends now and then.\n\nOnline they preach rules like they’re fact, not belief:\n“If they wanted to, they would” sounds simple, not brief.\n“Closure’s a myth,” “detach and evolve,”\n“Choose peace,” “heal first,” “don’t chase,” “don’t solve.”\nScience blames chemicals, fate blames the stars,\nBoth dodging the truth- we’re the ones with the scars.\n\nSo call it a string, a bench, a last goodbye scene,\nCall it timing, trauma, or “love isn’t clean.”\nBut if love were logical, fair, or easy to prove,\nWe wouldn’t still be breaking rules just to feel it move.` },
+            { id: 14, title: "The Constant", category: 'comfort', content: `A true friend isn’t just someone who stands near,\nThey are the voice you hear when the world disappears.\nNot just a shoulder, but the place you can breathe,\nWhere silence is comfort, and words aren’t deceived.\n\nThey see you, not just the mask you wear,\nThey know your fears, your grief, your despair.\nAnd still, they stay- steady as stone,\nIn a world that often leaves you alone.\n\nThey are the laugh that cracks through the dark,\nThe spark in the silence, the light in the dark.\nA true friend is the one who will fight\nTo hold you together when you’re falling apart at night.\nThey love you in places you didn’t think you could be-\nIn your anger, your flaws, your complexity.\n\nThey don’t flinch when your heart breaks wide,\nBecause their love is the space where you can’t hide.\nTogether, you’ve built a language of your own,\nIn glances, in laughter, in moments unknown.\n\nThey’ll remember the jokes no one else gets,\nThe stories that linger, the secrets that are set.\nWhen the world is cruel and the road is long,\nA true friend is the rhythm of your heart’s song.\n\nThey’re the one who will stand when the rest walk away,\nThe one who shows up, no matter the day.\nThey’re the fire in your chest when the cold comes through,\nThe one who sees all that you’re scared to pursue.\n\nThey push you forward, never letting you fall,\nA true friend’s love is unconditional, through it all.\nAnd when you’ve fought and words have flown,\nThey’re the ones who will still call you home.\n\nIn the worst of it, in the dark of the fight,\nThey’re the steady hand in the middle of night.\nA true friend never leaves, no matter the cost,\nThey’ll stand with you, whether you’re found or you’re lost.\n\nTheir love isn’t fleeting, it’s deep and it’s true-\nA true friend is home, no matter what you do.` },
+            { id: 18, title: "Eternal Bonds", category: 'comfort', content: `Love is the quiet thread that binds,\nInvisible, yet felt through time.\nIt’s in family, where roots run deep,\nIn shared memories, where we laugh and we weep.\n\nFor my mom, love is a warm embrace,\nHer strength, her wisdom, her gentle grace.\nShe’s the anchor in storms, the calm in my mind,\nHer love is a refuge, steady and kind.\nAnd my dad, with hands worn from years of care,\nHis silent love speaks louder than words can declare.\nIn his quiet strength, I’ve found my way,\nA love that endures, come what may.\n\nFor my sister, a bond that’s endless and bright,\nHer wisdom, a beacon in the darkest night.\nShe’s the one who knows my heart without a word,\nIn her love, I’ve found everything I’ve ever heard.\nThrough every challenge, through every fall,\nShe’s the one who’s been there through it all.\n\nIn friendship, love is a quiet glow,\nA bond that deepens, helping us grow.\nNo need for words, just knowing and being,\nA heart-to-heart that’s ever seeing.\nThrough laughter and tears, we stand side by side,\nIn the embrace of love, we do not hide.\nA friendship that weaves through time’s embrace,\nA love that’s steady, a comforting grace.\n\nWith my best friend, love is raw and true,\nA bond that grows with each moment new.\nHer laughter is my light in days gone wrong,\nHer love, a melody, an ever-present song.\nThrough every storm, through every cheer,\nHer friendship is the one I hold most dear.\n\nAnd then there’s my male best friend, patient and kind,\nA love that’s steady, one of a different kind.\nHis heart is large, his presence pure,\nThrough every trial, we’ve always endured.\nBut there’s a shift that might one day come,\nWhen love for him blooms in someone.\nI might pull back, not out of spite,\nBut because new love needs space to ignite.\nI’ll always care, but things might change,\nIn his new world, I might feel strange.\n\nRomantic love, though yet unseen,\nLingers in dreams, in what might have been.\nI haven’t known it, but I know it’s near,\nWaiting for the right time to appear.\nA glance, a touch, a word unspoken,\nA love that feels like a promise, unbroken.\n\nIn my faith, love is divinely pure,\nIn Krishna’s grace, I find my cure.\nIt’s a love that transcends what we know,\nA union that makes all things glow.\nIn Radha’s arms, I feel it so deep,\nA love that stirs my soul, makes me weep.\n\nAnd in humanity, love takes its form,\nIn the hands that heal, in hearts that transform.\nIt’s the kindness shared, the peace we seek,\nThe love that rises when the world feels weak.\nIn every smile, in every tear,\nLove binds us all, far and near.\n\nLove is more than just a feeling; it’s a force,\nA river that guides us along life’s course.\nIn family, in friends, in faith, in the heart,\nIt’s the spark of life, the light from the start.\nAnd in the waiting for romance, unspoken, unknown,\nI trust that love will find me when I’ve fully grown.` },
+            { id: 23, title: "Kya Karegi Tu Jaankar?", category: 'comfort', content: `“Kya karegi jaankar?”, tu baar-baar kehta hai,\nNa sirf dard pe, har chhoti baat pe sawaal uthata hai.\nPucha maine - kya pasand hai? kya sochta hai? kaisa lagta hai?\nAur tu muskura ke keh deta hai,\nKya karegi tu jaankar?\nMain bas sunungi, bina judge kiye, bina kuch badle.\n\nJaise khud ke baare mein baat karna sawaal ban gaya ho,\nJaise apne liye mehsoos karna kisi aur ke liye jhelna ho.\nPar main jaanna chahti hoon tujhko,\nHar pehlu, har chhupi baat, bina kuch chhode.\nKya karegi tu jaankar?\nMain tere har raaz ko apne ki tarah sambhalungi.\n\nMain jawab nahi leke aayi,\nBas chahti hoon ke tu kisi kone mein adhura na rahe.\nJab duniya thaka deti hai aur tu khud se bhi door ho jaata,\nMain tab bhi wahi hoon, bina pooche, bina jaaye.\nKya karegi tu jaankar?\nMain tere dard mein saath dungi, chupke se teri raah takungi.\n\nTere khayalon mein kitni kahaniyaan chhupi hain,\nJo tu khud se bhi chupata hai, main unhe jaanna chahti hoon.\nTere har jazbe ko, har ehsaas ko samajhna chahti hoon,\nJaisa ab tak kisi ne koshish nahi ki tere dil ko padhne ki.\nKya karegi tu jaankar?\nMain teri baat samjhungi, teri baatein achhe se sunungi.\n\nTu khud ko jitna bhi kam samjhe, main utna hi zyada jaan na chahti hoon,\nTujhe woh dosti dena chahti hu,  jo tu khud se maangta raha ho.\nKyunki samajhna aasaan nahi hota,\nPar main chahti hoon ki tu samjhe - tu akela nahi hai.\nKya karegi tu jaankar?\nMain tere saath chalungi, jab tak tu khud se pyaar karega aur uske baad bhi.\n\nMain tujhe chunungi, jab tak tu kisi ko apne upar nahi chunta,\nAur main nahi jaungi, jab tak tu khud na kahe mujhe jaane ko.\nAur na kabhi chodungi, jab tak tu woh na paaye,\nJo tere dard ko samjhe, jo tere dil ko apna samjhe.\n\nToh agli baar jab tu keh de “kya karegi jaankar?”\nToh bas itna soch -\nKisi ko farak padta hai, chaahe tujhe khud nahi lagta ho,\nAur wo kisi… main hoon.` },
+            { id: 25, title: "I’ll Stay", category: 'comfort', content: `Having a bad day?\nCall me, don’t hesitate.\nFeeling lost?\nText me, it’s never too late.\nSomeone hurt you?\nPour your heart out, let it bleed,\nI’ll hold your pain, I’ll give you what you need.\n\nYou don’t have to carry the weight alone,\nI’ll be your strength, your shelter, your home.\nWhen the world feels cold and you’re lost in the night,\nI’ll be the warmth, the one holding you tight.\n\nI know what it’s like when no one stays,\nWhen the silence screams and the heart decays.\nI’ve walked that road, felt the bitter ache,\nBut for you, my love, I’ll never break.\n\nIt’s unfair to laugh with me and still hold the sorrow,\nBut I’ll stand beside you, today and tomorrow.\nWhen the burden’s too heavy and you can’t take the strain,\nI’ll be there, hugging you, through the pain.\n\nI’ll wipe your tears and never let go,\nYou’ll never face the darkness alone, you’ll know.\nYou’re not a burden, you’re my love, my light,\nAnd I’ll hold you close, through every fight.` },
+            { id: 28, title: "You Are Not Too Much", category: 'comfort', content: `You're not too much, never, not to me,\nYour heart is a universe, a wild, beautiful sea.\nOverthinking? It's just a way to care,\nIt shows your depth, your love, how you’re always there.\n\nIf I could take every ache, every sigh,\nI’d do it for you, without asking why.\nI don’t tire of your voice, your pain, your fears,\nI’d hold you through your laughter and your tears.\n\nSo talk to me, love, let it all unfold,\nEvery thought, every worry, every feeling you hold.\nYou’re safe with me, you’re never too much,\nI’m here, I’m yours, just lean on my touch.\n\nIf losing me is the fear that you hold tight,\nThen know, my dear, I’m not going anywhere tonight.\nI’ll be here, forever, come whatever may,\nListening to your heart, every single day.` },
+            { id: 30, title: "Silence For Your Sake", category: 'comfort', content: `I don’t want to burden you,\nI really love being around you, I do.\nBut if I start talking about everything,\nThe complaints, the things that irritate me,\nThe way my heart pulls back at every little inconvenience,\nHow even the smallest things can hurt me.\nI’m scared-\nScared that you’ll see me differently.\nThat my rants will become too much.\nThat you’ll get tired of listening to the same pain in different words.\nThat you’ll think I am too much, too sensitive, too complicated,\nAnd maybe…\nOne day you’ll get bored of me.\nOf my overthinking, of my emotions, of my expression.\nSo I just stay quiet,\nBecause losing you would hurt more than carrying all this alone.\n\nI watch you quiet,\neyes fixed on a page you hate,\nlike the words are chains\nand your mind’s a cage.` },
+            { id: 31, title: "Cracked Glass", category: 'comfort', content: `You laugh sometimes,\nbut it’s hollow, like a cracked glass,\nand I see the cracks deep under,\nthe things you won’t say, the things you won’t ask.\n\nYou carry pressure like a stone\ninside a pocket that’s ripped and torn.\nYou’re drowning slow, but you don’t scream,\njust sinking silent, stuck in a bad dream.\n\nI’m here, but what can I do?\nYou’re lost in a fight I can’t fight for you.\nYou’re tired, broken, and so damn alone,\nand I’m just watching it all, helpless, unknown.\n\nBut maybe inside that wreckage,\nthere’s a spark you can’t see yet\na crack in the darkness,\nwhere new light can set.\nYou’ll have to build from broken bones,\nrelearn how to stand on your own.\nAnd when you do, I’ll be here still,\nto catch you, hold you, help you heal.` },
+            { id: 32, title: "Performed Care", category: 'longing', content: `They say they love me, swear it’s real,\nBut love ain’t words, it’s what you feel.\nAnd what I feel is being played,\nBy pretty lies you carefully made.\n\nYou wrap your silence up as care,\nCall it space, pretend you’re there.\nYou speak in warmth, you act in cold,\nYour truth is fake, your comfort sold.\n\nYou tell me “stay,” then push me back,\nSmile sweet while loyalty you lack.\nYou hug with words, then turn and leave,\nLike I’m just easy to deceive.\n\nI watched you promise, watched you swear,\nWatched you vanish when I needed air.\nYou loved me loud when eyes were near,\nBut loved me least when I was scared.\n\nThis world is built on hollow hearts,\nPerforming care, rehearsed from start.\nFake concern, staged empathy,\nClapping for pain they’ll never see.\n\nDon’t say you love me, prove it first.\nI’m done translating lies that hurt.\nIf love is real, it shows its face,\nIt doesn’t run, it doesn’t fake.\n\nI’d rather stand alone in truth\nThan drown in comfort fake and used.\nSo keep your words, they don’t impress.\nYour silence finally said the rest.` },
+            { id: 33, title: "I Love You", category: 'love', content: `I love you like warm socks on a rainy day,\nLike the first sip of coffee that clears the gray.\nLike old letters we read and can’t forget,\nLike quiet moments that linger, that settle, that set.\n\nI love you like roots hold deep in the earth,\nLike rivers carve stone to give it new birth.\nLike mornings when sunlight finds its way,\nLike hands held tight when words can’t say.\n\nI love you like the river loves the stone,\nLike homesick hearts that long for their own.\nLike the smell of rain on streets we’ve known,\nLike laughter shared when we’re all alone.\n\nI love you like the stars hug the night,\nLike stories remembered from long ago, bright.\nLike the first breath of wind through an open door,\nLike memories of people we’ve loved before.\n\nI love you like bridges that span the years,\nLike tears that fall when no one hears.\nLike mountains that rise through storms and snow,\nLike seeds that bloom no one will ever know.\n\nI love you like the world always finds its north,\nLike the hands that hold, the unwavering warmth.\nLike laughter that lingers in rooms long past,\nLike moments we hope are meant to last.\n\nI love you like the sky loves the first dawn,\nLike rivers to oceans, forever drawn.\nLike the hearts of the past whispering through,\nLike the quiet strength that always knew.\n\nI love you like a photographer loves the light,\nLike a sculptor loves form taking shape just right.\nLike every heartbeat, like every breath,\nLike life itself defying death.\n\nI love you like you’ll never know,\nFor words fall short, and love will always grow.` },
+            { id: 34, title: "Always, Never", category: 'self', content: `Always the artist, never the muse,\nHands full of color, afraid to be used,\nAlways the writer, never the line\nThey repeat out loud and call divine,\n\nAlways the option, never the choice,\nAlways the echo, never the voice,\nAlways the shoulder steady and near,\nNever the reason someone stays here,\n\nAlways the photographer, never the frame,\nFreezing their joy, forgetting my name,\nAlways behind it, fixing the light,\nCropping myself out of the night,\n\nAlways the poet, never the poem,\nAlways the door, never the home,\nI give away words like they don’t cost breath,\nThen sit with the silence I didn’t confess,\n\nAlways the listener, never confessed to,\nAlways the healer, never addressed to,\nI stitch up their wounds, precise and polite,\nThen bleed in the quiet after goodnight,\n\nAlways the constant, never the crave,\nAlways the brave face, quietly afraid,\nAlways the anchor holding them still,\nNever the ocean they ache to feel,\n\nAlways the backup, ready, in place,\nAlways remembered at someone else’s pace,\nAlways the almost, the what could be,\nNever the answer, always the key,\n\nAlways the mirror, never the view,\nShowing them everything they already knew,\nThey take what they need, leave nothing behind,\nI clean up the traces and call it fine.\n\nAlways the artist, never the muse,\nAlways the heart, never the excuse,\nAlways the depth they circle but flee,\nAlways the almost, never the meant to be,\n\nAlways the option, never the vow,\nAlways the later, never the now,\nAlways the proof that love could exist,\nNever the hand that chose to commit,\n\nAlways remembered, never the stay,\nAlways the truth they look past, away,\nAlways the reason they felt less alone,\nNever the one they brought back home,\n\nAlways the giver, never the gain,\nAlways the lesson, never the claim,\nAlways the fire they learned to use,\nNever the place they learned to choose.` }
+        ];
+
+        // --- AI LOGIC ---
+        const SENTIMENT_DICT = {
+          positive: ['love', 'kiss', 'sun', 'light', 'honey', 'bloom', 'fly', 'heart', 'green', 'flowers', 'breathes', 'hope', 'sweet', 'warm', 'laugh', 'safe', 'steady', 'calm', 'grace', 'kindness', 'friend', 'together', 'home'],
+          negative: ['rain', 'tore', 'dark', 'bitter', 'scream', 'trapped', 'hide', 'ugly', 'frost', 'lost', 'gloom', 'winter', 'tear', 'pain', 'static', 'noise', 'hurt', 'ache', 'fear', 'alone', 'broken', 'cry', 'grief', 'storm'],
+          intense: ['explode', 'scream', 'love', 'hate', 'burn', 'forever', 'never', 'always', 'universe', 'wild', 'fire', 'blood', 'soul'],
+          melancholy: ['miss', 'time', 'fade', 'memory', 'ghost', 'shadow', 'silence', 'quiet', 'drift', 'gone', 'leaving', 'goodbye']
+        };
+
+        const analyzePoem = (text) => {
+          const words = text.toLowerCase().match(/\b(\w+)\b/g) || [];
+          let scores = { positivity: 0, negativity: 0, intensity: 0, melancholy: 0 };
+          words.forEach(word => {
+            if (SENTIMENT_DICT.positive.includes(word)) scores.positivity++;
+            if (SENTIMENT_DICT.negative.includes(word)) scores.negativity++;
+            if (SENTIMENT_DICT.intense.includes(word)) scores.intensity++;
+            if (SENTIMENT_DICT.melancholy.includes(word)) scores.melancholy++;
+          });
+          const total = Math.max(1, scores.positivity + scores.negativity + scores.intensity + scores.melancholy);
+          
+          const chartData = [
+            { label: 'Hope', value: (scores.positivity / total) * 100, color: 'bg-emerald-400' },
+            { label: 'Pain', value: (scores.negativity / total) * 100, color: 'bg-indigo-400' },
+            { label: 'Intensity', value: (scores.intensity / total) * 100, color: 'bg-rose-400' },
+            { label: 'Nostalgia', value: (scores.melancholy / total) * 100, color: 'bg-amber-400' },
+          ];
+
+          let mood = 'Neutral';
+          if (scores.positivity > scores.negativity && scores.positivity > scores.melancholy) mood = 'Radiant';
+          else if (scores.negativity > scores.positivity) mood = 'Heavy';
+          else if (scores.melancholy > scores.positivity) mood = 'Reflective';
+          else if (scores.intensity > 2) mood = 'Passionate';
+          
+          return { scores, mood, chartData };
+        };
+
+        // --- COMPONENTS ---
+        const FloatingParticles = () => (
+          <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+            {[...Array(20)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute animate-float opacity-30 dark:opacity-20"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  animationDuration: `${15 + Math.random() * 20}s`,
+                  animationDelay: `${i * -2}s`,
+                  transform: `scale(${0.5 + Math.random()})`
+                }}
+              >
+                {i % 4 === 0 ? <Heart size={24} className="text-pink-300 fill-pink-100" /> : 
+                 i % 4 === 1 ? <Sparkles size={20} className="text-amber-300" /> : 
+                 i % 4 === 2 ? <CloudRain size={24} className="text-indigo-200" /> :
+                 <Flower size={20} className="text-emerald-200" />}
+              </div>
+            ))}
+          </div>
+        );
+
+        // Component Thinking: Reusable Badge
+        const MoodBadge = ({ mood, category }) => (
+            <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-extrabold ${category.bg} dark:bg-slate-800 ${category.accent} ${category.darkAccent} border border-transparent dark:border-slate-700`}>
+                {mood}
+            </span>
+        );
+
+        const MoodPieChart = ({ data }) => {
+            let currentAngle = 0;
+            const segments = data.map(item => {
+                const angle = (item.value / 100) * 360;
+                const segment = `${item.color.replace('bg-', '') === 'emerald-400' ? '#34d399' : 
+                                 item.color.replace('bg-', '') === 'indigo-400' ? '#818cf8' : 
+                                 item.color.replace('bg-', '') === 'rose-400' ? '#fb7185' : '#fbbf24'} ${currentAngle}deg ${currentAngle + angle}deg`;
+                currentAngle += angle;
+                return segment;
+            });
+
+            return (
+                <div className="relative w-32 h-32 rounded-full mx-auto shadow-md hover:scale-105 transition-transform duration-500 cursor-pointer group" style={{ background: `conic-gradient(${segments.join(', ') || '#e2e8f0 0deg 360deg'})` }} role="img" aria-label="Mood distribution chart">
+                    <div className="absolute inset-0 m-8 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center shadow-inner group-hover:scale-95 transition-transform">
+                        <span className="text-xs font-black text-slate-400 dark:text-slate-500">MOOD</span>
+                    </div>
+                </div>
+            );
+        };
+
+        // Updated Modal with "Add Poem" feature
+        const InfoModal = ({ onClose, onAddPoem }) => {
+            const [activeTab, setActiveTab] = useState('logic'); // 'logic' or 'add'
+            
+            // Add Poem State
+            const [newTitle, setNewTitle] = useState('');
+            const [newCategory, setNewCategory] = useState('love');
+            const [newContent, setNewContent] = useState('');
+            const [generatedCode, setGeneratedCode] = useState('');
+
+            const handleGenerate = () => {
+                const id = Date.now(); // Temporary unique ID
+                const snippet = `{ id: ${id}, title: "${newTitle}", category: '${newCategory}', content: \`${newContent.replace(/`/g, '\\`')}\` },`;
+                setGeneratedCode(snippet);
+                
+                // Add to current session immediately
+                if (newTitle && newContent) {
+                    onAddPoem({ id, title: newTitle, category: newCategory, content: newContent });
+                    alert("Poem added to view! Copy the code below to make it permanent.");
+                }
+            };
+
+            const copyToClipboard = () => {
+                navigator.clipboard.writeText(generatedCode);
+                alert("Code copied! Now paste it into the POEMS array in your file.");
+            };
+
+            return (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]" onClick={onClose} onKeyDown={(e) => e.key === 'Escape' && onClose()} tabIndex="0">
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl p-0 max-w-2xl w-full shadow-2xl border border-slate-100 dark:border-slate-800 max-h-[85vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+                        
+                        {/* Modal Header with Tabs */}
+                        <div className="flex border-b border-slate-100 dark:border-slate-800">
+                            <button 
+                                onClick={() => setActiveTab('logic')}
+                                className={`flex-1 p-4 font-bold text-sm uppercase tracking-wider transition-colors ${activeTab === 'logic' ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50/50 dark:bg-indigo-900/20' : 'text-slate-400 hover:text-slate-600'}`}
+                            >
+                                Mood Logic
+                            </button>
+                            <button 
+                                onClick={() => setActiveTab('add')}
+                                className={`flex-1 p-4 font-bold text-sm uppercase tracking-wider transition-colors ${activeTab === 'add' ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50/50 dark:bg-indigo-900/20' : 'text-slate-400 hover:text-slate-600'}`}
+                            >
+                                Add New Poem
+                            </button>
+                            <button onClick={onClose} className="p-4 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-400" aria-label="Close modal">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        
+                        <div className="p-8 overflow-y-auto">
+                            {activeTab === 'logic' ? (
+                                <div className="space-y-6">
+                                    <section>
+                                        <h3 className="font-bold text-sm uppercase tracking-wider text-slate-400 mb-3">How it works</h3>
+                                        <p className="text-slate-600 dark:text-slate-300 leading-relaxed font-light">
+                                            This application uses a custom Natural Language Processing (NLP) algorithm running entirely in your browser. 
+                                            It tokenizes each poem and matches words against weighted sentiment dictionaries to calculate a "Vibe Score."
+                                        </p>
+                                    </section>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {Object.entries(SENTIMENT_DICT).map(([category, words]) => (
+                                            <div key={category} className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
+                                                <div className="font-bold capitalize mb-2 text-indigo-600 dark:text-indigo-400">{category}</div>
+                                                <div className="flex flex-wrap gap-1">
+                                                    {words.map(w => (
+                                                        <span key={w} className="text-xs px-2 py-1 bg-white dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400">
+                                                            {w}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-100 dark:border-amber-800/30 text-sm text-amber-800 dark:text-amber-200 flex gap-3">
+                                        <Info size={18} className="shrink-0 mt-0.5" />
+                                        <p>Disclaimer: This is an experimental deterministic algorithm.</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    <h3 className="font-bold text-lg text-slate-800 dark:text-white">Poem Code Generator</h3>
+                                    <p className="text-sm text-slate-500">Fill this out to generate the code snippet for a new poem.</p>
+                                    
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Title</label>
+                                            <input 
+                                                className="w-full p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white"
+                                                value={newTitle}
+                                                onChange={(e) => setNewTitle(e.target.value)}
+                                                placeholder="Poem Title"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Category</label>
+                                            <select 
+                                                className="w-full p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white"
+                                                value={newCategory}
+                                                onChange={(e) => setNewCategory(e.target.value)}
+                                            >
+                                                {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Content</label>
+                                        <textarea 
+                                            className="w-full p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white h-32 font-mono text-sm"
+                                            value={newContent}
+                                            onChange={(e) => setNewContent(e.target.value)}
+                                            placeholder="Paste poem text here..."
+                                        />
+                                    </div>
+
+                                    <button 
+                                        onClick={handleGenerate}
+                                        className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <Plus size={18} /> Preview & Generate Code
+                                    </button>
+
+                                    {generatedCode && (
+                                        <div className="mt-4 p-4 bg-slate-900 rounded-xl relative group">
+                                            <code className="text-green-400 font-mono text-xs break-all block">
+                                                {generatedCode}
+                                            </code>
+                                            <button 
+                                                onClick={copyToClipboard}
+                                                className="absolute top-2 right-2 p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
+                                                title="Copy to Clipboard"
+                                            >
+                                                <Copy size={16} />
+                                            </button>
+                                        </div>
+                                    )}
+                                    
+                                    {generatedCode && (
+                                        <p className="text-xs text-slate-500 italic mt-2">
+                                            👉 <strong>Next Step:</strong> Open this file in Notepad, find <code>const POEMS = [</code>, and paste this code at the end of the list to save it permanently.
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const FullPoemView = ({ poem, onBack, isLiked, onLike }) => {
+            const analysis = useMemo(() => analyzePoem(poem.content), [poem.content]);
+            const category = CATEGORIES.find(c => c.id === poem.category) || CATEGORIES[0];
+            const [voices, setVoices] = useState([]);
+            const [selectedVoiceName, setSelectedVoiceName] = useState('');
+            const [isSpeaking, setIsSpeaking] = useState(false);
+
+            useEffect(() => {
+                window.scrollTo(0, 0);
+                const loadVoices = () => {
+                    let available = window.speechSynthesis.getVoices();
+                    setVoices(available);
+                    if (available.length > 0) {
+                        const preferred = available.find(v => v.name.includes('Google US English') || v.name.includes('Samantha')) || available[0];
+                        setSelectedVoiceName(preferred.name);
+                    }
+                };
+                loadVoices();
+                window.speechSynthesis.onvoiceschanged = loadVoices;
+                
+                const handleKeyDown = (e) => {
+                    if (e.key === 'Escape') onBack();
+                };
+                window.addEventListener('keydown', handleKeyDown);
+
+                return () => {
+                    window.speechSynthesis.cancel();
+                    window.speechSynthesis.onvoiceschanged = null;
+                    window.removeEventListener('keydown', handleKeyDown);
+                };
+            }, [onBack]);
+
+            const handleSpeak = () => {
+                if (isSpeaking) {
+                    window.speechSynthesis.cancel();
+                    setIsSpeaking(false);
+                } else {
+                    window.speechSynthesis.cancel();
+                    const u = new SpeechSynthesisUtterance(poem.content);
+                    u.rate = 0.9;
+                    const voice = voices.find(v => v.name === selectedVoiceName);
+                    if (voice) u.voice = voice;
+                    u.onend = () => setIsSpeaking(false);
+                    window.speechSynthesis.speak(u);
+                    setIsSpeaking(true);
+                }
+            };
+
+            return (
+                <div className="min-h-screen pt-24 pb-12 px-6 max-w-5xl mx-auto flex flex-col md:flex-row gap-12 animate-fadeIn" role="dialog" aria-modal="true" aria-label={`Reading ${poem.title}`}>
+                    <main className="flex-1">
+                        <button 
+                            onClick={onBack}
+                            className="group flex items-center gap-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mb-8 font-bold tracking-wide uppercase text-xs focus:outline-none focus:text-indigo-600"
+                            aria-label="Back to collection"
+                        >
+                            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Collection
+                        </button>
+                        
+                        <article className="glass-panel dark:bg-slate-900/80 rounded-3xl p-8 md:p-12 shadow-2xl border border-slate-100 dark:border-slate-800 relative overflow-hidden transition-colors duration-300 animate-slideUp">
+                            <div className={`absolute top-0 left-0 w-full h-2 bg-gradient-to-r ${category.color} ${category.darkColor}`}></div>
+                            <h1 className="font-serif text-4xl md:text-5xl font-black text-slate-800 dark:text-slate-100 mb-6 leading-tight">{poem.title}</h1>
+                            <div className="w-16 h-1 bg-slate-200 dark:bg-slate-700 rounded-full mb-8"></div>
+                            <p className="whitespace-pre-line font-serif text-lg md:text-xl text-slate-600 dark:text-slate-300 leading-loose tracking-wide">
+                                {poem.content}
+                            </p>
+                            <p className="font-serif text-right mt-8 text-slate-500 dark:text-slate-400 italic text-sm md:text-base">— Avni Joshi</p>
+                            
+                            <div className="mt-12 border-t border-slate-100 dark:border-slate-800 pt-8">
+                                <div className="flex flex-wrap items-center gap-4 mb-6">
+                                    <label className="text-xs font-bold uppercase tracking-wider text-slate-400" htmlFor="voice-select">Voice:</label>
+                                    <select 
+                                        id="voice-select"
+                                        className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-sm rounded-lg p-2 focus:ring-2 focus:ring-indigo-500 outline-none flex-grow max-w-xs transition-colors"
+                                        value={selectedVoiceName}
+                                        onChange={(e) => setSelectedVoiceName(e.target.value)}
+                                    >
+                                        {voices.map(v => (
+                                            <option key={v.name} value={v.name}>{v.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                
+                                <div className="flex gap-4">
+                                    <button 
+                                        className={`p-3 rounded-full transition-all duration-200 flex items-center gap-2 px-6 focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-900 ${isSpeaking ? 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-200 dark:bg-indigo-900 dark:text-indigo-200 dark:ring-indigo-800' : 'bg-slate-50 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300'}`}
+                                        onClick={handleSpeak}
+                                        aria-label={isSpeaking ? 'Stop reading' : 'Read poem aloud'}
+                                    >
+                                        {isSpeaking ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                                        <span className="font-bold text-sm">{isSpeaking ? 'Stop' : 'Read Aloud'}</span>
+                                    </button>
+                                    <button 
+                                        className={`btn-icon bg-slate-50 dark:bg-slate-800 hover:bg-pink-50 dark:hover:bg-pink-900/30 text-slate-400 hover:text-pink-600 dark:hover:text-pink-400 animate-pulse-slow ${isLiked ? 'text-pink-600 dark:text-pink-500 fill-pink-600 dark:fill-pink-500' : ''}`}
+                                        onClick={onLike}
+                                        aria-label={isLiked ? "Unlike poem" : "Like poem"}
+                                    >
+                                        <Heart size={20} className={isLiked ? "fill-current" : ""} />
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+                    </main>
+
+                    <aside className="w-full md:w-80 shrink-0" aria-label="Poem Analysis">
+                        <div className="sticky top-24 space-y-6">
+                            <div className="card-base p-6">
+                                <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
+                                    <Sparkles size={18} className="text-indigo-500" /> AI Analysis
+                                </h3>
+                                <MoodPieChart data={analysis.chartData} />
+                                <div className="mt-6 space-y-3">
+                                    {analysis.chartData.map(d => (
+                                        <div key={d.label} className="flex justify-between items-center text-sm">
+                                            <div className="flex items-center gap-2">
+                                                <div className={`w-3 h-3 rounded-full ${d.color}`}></div>
+                                                <span className="text-slate-600 dark:text-slate-400">{d.label}</span>
+                                            </div>
+                                            <span className="font-mono font-bold text-slate-400 dark:text-slate-500">{Math.round(d.value)}%</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className={`p-6 rounded-2xl bg-gradient-to-br ${category.color} ${category.darkColor} text-slate-800 dark:text-slate-100 shadow-lg`}>
+                                <div className="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">Theme</div>
+                                <div className="font-serif text-2xl font-bold flex items-center gap-2">
+                                    {category.title}
+                                </div>
+                                <p className="mt-2 text-sm opacity-80 leading-relaxed">
+                                    {category.description}
+                                </p>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            );
+        };
+
+        const App = () => {
+          const [activeTab, setActiveTab] = useState('all');
+          const [activeCategory, setActiveCategory] = useState(null);
+          const [searchTerm, setSearchTerm] = useState('');
+          const [activePoem, setActivePoem] = useState(null);
+          const [showInfo, setShowInfo] = useState(false); 
+          const [moodFilter, setMoodFilter] = useState(null);
+          const [randomPoem, setRandomPoem] = useState(null); 
+          const [likedPoems, setLikedPoems] = useState(() => {
+              if (typeof window !== 'undefined') {
+                  const saved = localStorage.getItem('likedPoems');
+                  return saved ? JSON.parse(saved) : [];
+              }
+              return [];
+          });
+          const [customPoems, setCustomPoems] = useState(() => {
+              if (typeof window !== 'undefined') {
+                  const saved = localStorage.getItem('customPoems');
+                  return saved ? JSON.parse(saved) : [];
+              }
+              return [];
+          });
+
+          const [darkMode, setDarkMode] = useState(() => {
+              if (typeof window !== 'undefined') {
+                  return localStorage.getItem('theme') === 'dark' || 
+                         (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+              }
+              return false;
+          });
+
+          useEffect(() => {
+              if (darkMode) {
+                  document.documentElement.classList.add('dark');
+                  localStorage.setItem('theme', 'dark');
+              } else {
+                  document.documentElement.classList.remove('dark');
+                  localStorage.setItem('theme', 'light');
+              }
+          }, [darkMode]);
+
+          useEffect(() => {
+              localStorage.setItem('likedPoems', JSON.stringify(likedPoems));
+          }, [likedPoems]);
+
+          useEffect(() => {
+              localStorage.setItem('customPoems', JSON.stringify(customPoems));
+          }, [customPoems]);
+
+          useEffect(() => {
+              setRandomPoem(POEMS[Math.floor(Math.random() * POEMS.length)]);
+          }, []);
+
+          const toggleLike = (e, id) => {
+              if (e) e.stopPropagation();
+              setLikedPoems(prev => 
+                  prev.includes(id) ? prev.filter(pId => pId !== id) : [...prev, id]
+              );
+          };
+
+          const addCustomPoem = (poem) => {
+              setCustomPoems(prev => [...prev, poem]);
+          };
+
+          const handleCategorySelect = (catId) => {
+            setActiveTab(catId);
+            setActiveCategory(CATEGORIES.find(c => c.id === catId) || null);
+            setActivePoem(null);
+            setMoodFilter(null); // Reset filters
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          };
+
+          const handlePoemClick = (poem) => {
+              setActivePoem(poem);
+          };
+
+          // Filter Logic
+          const filteredPoems = useMemo(() => {
+            // Merge static and custom poems
+            let result = [...POEMS, ...customPoems];
+            if (activeTab !== 'all') result = result.filter(p => p.category === activeTab);
+            if (searchTerm) {
+              const lower = searchTerm.toLowerCase();
+              result = result.filter(p => p.title.toLowerCase().includes(lower) || p.content.toLowerCase().includes(lower));
+            }
+            if (moodFilter) {
+                result = result.filter(p => {
+                    const analysis = analyzePoem(p.content);
+                    const moodData = analysis.chartData.find(d => d.label === moodFilter);
+                    return moodData && moodData.value > 20; 
+                });
+            }
+            return result;
+          }, [activeTab, searchTerm, moodFilter, customPoems]);
+
+          const globalStats = useMemo(() => {
+              let stats = { Hope: 0, Pain: 0, Intensity: 0, Nostalgia: 0 };
+              filteredPoems.forEach(p => {
+                  const analysis = analyzePoem(p.content);
+                  analysis.chartData.forEach(d => stats[d.label] += d.value);
+              });
+              const total = Object.values(stats).reduce((a, b) => a + b, 0) || 1;
+              return Object.entries(stats).map(([label, value]) => ({
+                  label, value: (value / total) * 100, 
+                  color: label === 'Hope' ? 'bg-emerald-400' : label === 'Pain' ? 'bg-indigo-400' : label === 'Intensity' ? 'bg-rose-400' : 'bg-amber-400'
+              }));
+          }, [filteredPoems]);
+
+          return (
+            <div className="min-h-screen relative selection:bg-indigo-100 selection:text-indigo-900 dark:selection:bg-indigo-900 dark:selection:text-indigo-100 flex flex-col">
+              <FloatingParticles />
+              
+              {/* HEADER */}
+              <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${activePoem ? 'bg-paper/90 dark:bg-slate-950/90 backdrop-blur-md shadow-sm' : 'bg-transparent'}`}>
+                <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+                  <div className="flex items-center gap-2 cursor-pointer group" onClick={() => { setActivePoem(null); handleCategorySelect('all'); }} tabIndex="0" onKeyDown={(e) => e.key === 'Enter' && handleCategorySelect('all')}>
+                    <div className="w-10 h-10 bg-white dark:bg-slate-800 rounded-xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-105 border border-slate-100 dark:border-slate-700 overflow-hidden relative">
+                        {/* New Custom Dried Flowers Logo */}
+                        <DriedFlowersLogo className="w-full h-full p-1" />
+                    </div>
+                    <div>
+                      <h1 className="font-serif font-bold text-xl tracking-tight text-slate-900 dark:text-white">After Feel</h1>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-500 dark:text-indigo-400">AI Powered Collection</p>
+                    </div>
+                  </div>
+                  
+                  <nav className="flex items-center gap-4">
+                      {!activePoem && (
+                          <div className="relative hidden md:block w-64 group">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={16} />
+                            <input 
+                                type="text" 
+                                placeholder="Search poems..." 
+                                value={searchTerm} 
+                                onChange={(e) => setSearchTerm(e.target.value)} 
+                                className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-sm focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900 focus:border-indigo-300 dark:focus:border-indigo-700 outline-none transition-all shadow-sm dark:text-slate-200" 
+                                aria-label="Search poems"
+                            />
+                          </div>
+                      )}
+                      
+                      <button 
+                        onClick={() => setDarkMode(!darkMode)} 
+                        className="btn-icon bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
+                        title="Toggle Dark Mode"
+                        aria-label="Toggle Dark Mode"
+                      >
+                        {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+                      </button>
+
+                      <button 
+                        onClick={() => setShowInfo(true)}
+                        className="btn-icon text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors"
+                        aria-label="Info and Add Poem"
+                      >
+                        <Info size={20} />
+                      </button>
+                  </nav>
+                </div>
+              </header>
+
+              {/* BOLD VISUAL MOMENT: Poem of the Day Header */}
+              {!activePoem && activeTab === 'all' && !searchTerm && (
+                  <div className="pt-28 pb-8 px-6">
+                      <div className="max-w-6xl mx-auto rounded-3xl overflow-hidden shadow-2xl relative group cursor-pointer" onClick={() => randomPoem && handlePoemClick(randomPoem)}>
+                          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 animate-gradient-x opacity-90 dark:opacity-80"></div>
+                          <div className="relative p-8 md:p-12 text-white flex flex-col md:flex-row items-center justify-between gap-6">
+                              <div className="text-left">
+                                  <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-4">
+                                      <Sparkles size={12} /> Poem of the Day
+                                  </div>
+                                  <h2 className="font-serif text-3xl md:text-5xl font-black mb-2 leading-tight">
+                                      {randomPoem ? randomPoem.title : "Loading..."}
+                                  </h2>
+                                  <p className="text-white/80 font-serif text-lg italic line-clamp-1 max-w-xl">
+                                      {randomPoem ? randomPoem.content.split('\n')[0] : "..."}
+                                  </p>
+                              </div>
+                              <div className="bg-white/20 backdrop-blur-md p-3 rounded-full hover:bg-white/30 transition-colors group-hover:scale-110 duration-300">
+                                  <ArrowLeft size={24} className="rotate-180" />
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              )}
+
+              {/* MAIN CONTENT */}
+              {activePoem ? (
+                  <FullPoemView 
+                    poem={activePoem} 
+                    onBack={() => setActivePoem(null)} 
+                    isLiked={likedPoems.includes(activePoem.id)}
+                    onLike={(e) => toggleLike(e, activePoem.id)}
+                  />
+              ) : (
+                  <main className="relative z-10 max-w-6xl mx-auto px-6 pt-8 pb-20 animate-slideUp flex-grow">
+                    
+                    {/* Vibe Dashboard */}
+                    <section className="mb-12 glass-panel dark:bg-slate-900/60 rounded-3xl p-6 border border-white dark:border-slate-800 shadow-sm transition-colors duration-300" aria-label="Vibe Check Dashboard">
+                        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                            <div className="text-left">
+                                <h2 className="text-2xl font-serif font-bold text-slate-800 dark:text-slate-100">Current Vibe Check</h2>
+                                <div className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                                    <span>Analyzing {filteredPoems.length} poems.</span>
+                                    {moodFilter && (
+                                        <button onClick={() => setMoodFilter(null)} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full flex items-center gap-1 hover:bg-indigo-200">
+                                            {moodFilter} <X size={10} />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="flex gap-6 items-center flex-wrap justify-center">
+                                {globalStats.map(stat => (
+                                    <button 
+                                        key={stat.label} 
+                                        className={`text-center group transition-all ${moodFilter === stat.label ? 'opacity-100 scale-110' : moodFilter ? 'opacity-40' : 'opacity-100'}`}
+                                        onClick={() => setMoodFilter(moodFilter === stat.label ? null : stat.label)}
+                                        aria-pressed={moodFilter === stat.label}
+                                        title={`Filter by ${stat.label}`}
+                                    >
+                                        <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 group-hover:text-indigo-500 transition-colors">{stat.label}</div>
+                                        <div className="flex items-end gap-1 justify-center h-12 w-8 mx-auto relative">
+                                            <div className="absolute bottom-0 w-full bg-slate-100 dark:bg-slate-800 rounded-t-full h-full"></div>
+                                            <div className={`w-full rounded-t-full ${stat.color} transition-all duration-1000 z-10 relative`} style={{ height: `${Math.max(15, stat.value)}%` }}></div>
+                                        </div>
+                                        <span className="font-mono text-xs font-bold dark:text-slate-300 mt-1 block">{Math.round(stat.value)}%</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Category Navigation */}
+                    <nav className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-12" aria-label="Category Filters">
+                      <button 
+                        onClick={() => handleCategorySelect('all')} 
+                        className={`p-5 rounded-2xl border transition-all duration-300 text-left focus:ring-2 focus:ring-indigo-500 outline-none ${activeTab === 'all' ? 'bg-slate-800 text-white border-slate-800 shadow-xl scale-105 dark:bg-white dark:text-slate-900' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:shadow-md hover:-translate-y-1'}`}
+                      >
+                        <div className="mb-3"><Sparkles size={24} /></div>
+                        <div className="font-black text-lg">All Poems</div>
+                        <div className="text-xs opacity-60 font-medium">{(POEMS.length + customPoems.length)} items</div>
+                      </button>
+                      {CATEGORIES.map(cat => {
+                        const IconComp = cat.icon;
+                        const isActive = activeTab === cat.id;
+                        return (
+                          <button 
+                            key={cat.id} 
+                            onClick={() => handleCategorySelect(cat.id)} 
+                            className={`p-5 rounded-2xl border transition-all duration-300 text-left relative overflow-hidden group focus:ring-2 focus:ring-indigo-500 outline-none ${isActive ? `bg-gradient-to-br ${cat.color} ${cat.darkColor} ${cat.border} dark:border-transparent shadow-xl scale-105 ring-1 ring-white/50 dark:ring-white/10` : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:shadow-md hover:-translate-y-1'}`}
+                          >
+                            <div className={`mb-3 transition-colors ${isActive ? 'text-slate-800 dark:text-slate-100' : `${cat.accent} ${cat.darkAccent}`}`}><IconComp size={24} /></div>
+                            <div className={`font-black text-lg transition-colors ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-slate-400'}`}>{cat.title.split(' ')[0]}</div>
+                            <div className={`text-xs transition-colors font-medium ${isActive ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500'}`}>{filteredPoems.filter(p => p.category === cat.id).length} pieces</div>
+                          </button>
+                        )
+                      })}
+                    </nav>
+
+                    {/* Section Title */}
+                    <div className="flex items-end justify-between mb-8 border-b border-slate-200 dark:border-slate-800 pb-4">
+                      <div>
+                        <h2 className="text-3xl font-serif font-black text-slate-800 dark:text-white transition-colors">{activeCategory ? activeCategory.title : 'All Collections'}</h2>
+                        <p className="text-slate-500 dark:text-slate-400 mt-2 max-w-2xl text-lg font-light leading-relaxed">{activeCategory ? activeCategory.description : 'A curated selection of thoughts, feelings, and moments captured in verse.'}</p>
+                      </div>
+                    </div>
+
+                    {/* Poem Grid */}
+                    <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
+                      {filteredPoems.map(poem => {
+                          const category = CATEGORIES.find(c => c.id === poem.category) || CATEGORIES[0];
+                          const analysis = analyzePoem(poem.content);
+                          const isLiked = likedPoems.includes(poem.id);
+                          return (
+                            <article 
+                                key={poem.id} 
+                                className="break-inside-avoid card-base card-hover relative group overflow-hidden cursor-pointer"
+                                onClick={() => handlePoemClick(poem)}
+                                onKeyDown={(e) => e.key === 'Enter' && handlePoemClick(poem)}
+                                tabIndex="0"
+                                aria-label={`Read ${poem.title}`}
+                            >
+                              <div className={`h-1.5 w-full bg-gradient-to-r ${category.color} ${category.darkColor}`}></div>
+                              <div className="p-6">
+                                <div className="flex justify-between items-start mb-4">
+                                  <h3 className="font-serif text-xl font-bold text-slate-800 dark:text-slate-200 group-hover:text-indigo-700 dark:group-hover:text-indigo-400 transition-colors">{poem.title}</h3>
+                                  <MoodBadge mood={analysis.mood} category={category} />
+                                </div>
+                                <p className="font-serif text-slate-500 dark:text-slate-400 text-sm line-clamp-3 mb-6 leading-relaxed opacity-80">
+                                  {poem.content}
+                                </p>
+                                <div className="flex justify-between items-center pt-4 border-t border-slate-50 dark:border-slate-800">
+                                  <span className="text-xs font-bold text-indigo-500 dark:text-indigo-400 group-hover:underline flex items-center gap-1 uppercase tracking-wide">
+                                    Read Full Poem <ArrowLeft size={12} className="rotate-180" />
+                                  </span>
+                                  <div className="flex gap-1.5 items-center">
+                                      <button 
+                                        className={`btn-icon hover:bg-pink-50 dark:hover:bg-pink-900/30 text-slate-400 hover:text-pink-600 dark:hover:text-pink-400 ${isLiked ? 'text-pink-600 dark:text-pink-500 fill-pink-600 dark:fill-pink-500' : ''}`}
+                                        onClick={(e) => toggleLike(e, poem.id)}
+                                        aria-label={isLiked ? "Unlike poem" : "Like poem"}
+                                        title={isLiked ? "Unlike" : "Like"}
+                                      >
+                                          <Heart size={18} className={isLiked ? "fill-current" : ""} />
+                                      </button>
+                                      {analysis.chartData.sort((a,b) => b.value - a.value).slice(0,2).map((d, i) => (
+                                          <div key={i} className={`w-2 h-2 rounded-full ${d.color} shadow-sm`} title={d.label}></div>
+                                      ))}
+                                  </div>
+                                </div>
+                              </div>
+                            </article>
+                          );
+                      })}
+                    </div>
+                    
+                    {filteredPoems.length === 0 && (
+                        <div className="text-center py-24 opacity-60">
+                          <div className="inline-block p-6 rounded-full bg-slate-100 dark:bg-slate-800 mb-4 animate-bounce"><Search size={40} className="text-slate-400" /></div>
+                          <h3 className="text-2xl font-bold mb-2 dark:text-white">No poems found</h3>
+                          <p className="dark:text-slate-400">Try adjusting your filters or search keywords.</p>
+                          {moodFilter && (
+                              <button onClick={() => setMoodFilter(null)} className="mt-4 text-indigo-500 font-bold hover:underline">Clear Filters</button>
+                          )}
+                        </div>
+                    )}
+                  </main>
+              )}
+
+              {/* Info & Add Poem Modal */}
+              {showInfo && <InfoModal onClose={() => setShowInfo(false)} onAddPoem={addCustomPoem} />}
+
+              <footer className="relative z-10 border-t border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-950/50 backdrop-blur-sm py-12 text-center mt-auto">
+                <div className="max-w-xl mx-auto px-6">
+                    <div className="flex justify-center items-center gap-2 mb-4 text-slate-400 dark:text-slate-500">
+                        <Heart size={16} className="fill-pink-300 text-pink-300 animate-pulse" />
+                    </div>
+                    <p className="font-serif text-slate-600 dark:text-slate-300 mb-4 text-lg">
+                        "Built as a personal poetry archive + frontend experiment in UI states, layout systems, and emotion-driven design."
+                    </p>
+                    <div className="text-xs text-slate-400 dark:text-slate-600 font-medium tracking-widest uppercase">
+                        © {new Date().getFullYear()} • Ananya Joshi • React & NLP
+                    </div>
+                </div>
+              </footer>
+            </div>
+          );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
