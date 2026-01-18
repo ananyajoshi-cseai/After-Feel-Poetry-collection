@@ -92,12 +92,7 @@ Afterfeel/
 │                     # - NLP Logic
 ├── README.md         # Project documentation
 └── .gitignore        # Git configuration
-## 🔮 Future Roadmap
 
-* [ ] **Backend Integration:** Connect to Firebase to allow global "Like" counts across all users.
-* [ ] **Social Sharing:** Generate a shareable image card of the poem with its sentiment graph.
-* [ ] **User Submissions:** Add a form for users to submit their own poetry for AI analysis.
-* [ ] **PWA Support:** Convert the site into a Progressive Web App for offline reading on mobile.
 ```
 ---
 
@@ -113,3 +108,4 @@ Afterfeel/
   <p>Built with 💙 by <a href="https://github.com/yourusername">Ananya Joshi</a></p>
   <p><i>Merging Logic with Emotion</i></p>
 </div>
+```
