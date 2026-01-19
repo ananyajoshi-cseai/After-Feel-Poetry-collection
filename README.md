@@ -12,7 +12,7 @@
 
 ## 📖 About The Project
 
-![Product Name Screen Shot](./preview.png)(https://ananyajoshi-cseai.github.io/After-Feel-Poetry-collection/)
+![Product Name Screen Shot](./preview.png)
 
 Afterfeel is more than just a static blog...
 
