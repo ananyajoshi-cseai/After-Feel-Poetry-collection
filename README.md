@@ -1,5 +1,5 @@
 # Afterfeel | AI-Powered Poetry Experience
-
+[![Live Demo](https://img.shields.io/badge/demo-online-green.svg?style=for-the-badge&logo=vercel&logoColor=white)](https://after-feel-poetry-collection.vercel.app/)
 > *"Love isn’t proven when you beg or plead, It’s shown before you even speak."*
 
 **Afterfeel** is an immersive, interactive poetry portfolio designed to bridge the gap between literature and technology. Built as a digital sanctuary for the poetry of **Avni Joshi**, this application utilizes browser-based Artificial Intelligence to analyze the emotional weight of words in real-time, offering readers a visual representation of the feelings behind the verses.
