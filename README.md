@@ -56,12 +56,11 @@ This project demonstrates a sophisticated use of "No-Build" React. It proves tha
 
 | Component | Technology | Description |
 | :--- | :--- | :--- |
-| **Frontend Framework** | **React 18** | Used via UMD CDN for component-based state management (`useState`, `useEffect`, `useMemo`). |
-| **Styling Engine** | **Tailwind CSS** | Used via Script CDN for utility-first styling and custom animation configuration. |
+| **Frontend Framework** | **React 18** | Used via UMD CDN for component-based state management. |
+| **Styling Engine** | **Tailwind CSS** | Used via Script CDN for utility-first styling. |
 | **Compiler** | **Babel** | In-browser transpilation of JSX syntax. |
 | **Icons** | **Lucide / SVG** | Custom SVG paths implemented as reusable React components. |
-| **Data Storage** | **LocalStorage** | Persists "Liked" poems and Theme preferences without a backend database. |
-
+| **Data Storage** | **LocalStorage** | Persists "Liked" poems and Theme preferences. |
 ### The "Sentiment Engine" Logic
 The application utilizes a deterministic dictionary-based approach for sentiment analysis. Words are matched against predefined emotional categories, and a "Mood" is assigned based on the dominant score.
 
@@ -73,16 +72,36 @@ const analyzePoem = (text) => {
   // Return chart data and a definitive "Mood" label
 };
 ```
+## 🧠 The Sentiment Engine Logic
 
-## 🚀 How to Run
-Since this project uses a serverless, single-file architecture, deployment and testing are incredibly simple.
+The core of **After-Feel** is a deterministic, dictionary-based analysis engine designed to process poetic text in real-time. Instead of heavy machine learning dependencies, it uses a high-performance three-stage pipeline to interpret the "mood" behind the verses.
 
-1.  **Download:** Clone this repository or download the `index.html` file.
-2.  **Run:** Double-click `index.html` to open it in Chrome, Firefox, Safari, or Edge.
-3.  **No Installation Needed:** No `npm install` or `node_modules` required.
+### 🔄 The Processing Pipeline
+
+1. **Normalization & Tokenization** The engine prepares raw text by converting all input to lowercase and stripping punctuation. This ensures that words like "Glimmer" and "glimmer!" are processed as the same emotional token.
+
+2. **Weighted Scoring** Each token is cross-referenced against primary datasets to calculate an aggregate emotional weight:
+   * **Positivity Dictionary:** Identifies uplifting or ethereal vocabulary.
+   * **Negativity Dictionary:** Detects somber or hollow vocabulary.
+   * **Intensity Modifiers:** Words like "deeply" or "very" apply a **1.5x multiplier** to the final scores.
+
+3. **Mood Mapping & UI Synergy** The final dominant score triggers a dynamic shift in the application's visual theme:
+
+| Sentiment Balance | Resulting Mood | UI Visual Theme |
+| :--- | :--- | :--- |
+| **High Positivity** | ☀️ **Radiant** | Golden / Warm Tones |
+| **High Negativity** | 🌑 **Somber** | Midnight / Cool Tones |
+| **High Intensity** | 🌋 **Vivid** | High Contrast / Deep Tones |
 
 ---
 
+## 🚀 How to Run
+
+Since this project uses a **No-Build** React architecture, you can run it instantly without any local installations:
+
+1. **Clone** the repository: `git clone https://github.com/ananyajoshi-cseai/after-feel`
+2. **Open** `index.html` in your favorite browser.
+3. **Experience** the poetry—the CDNs handle all libraries automatically.
 ## 📂 Project Structure
 
 To maintain simplicity and portability, the entire application lives within a single, self-contained architecture:
