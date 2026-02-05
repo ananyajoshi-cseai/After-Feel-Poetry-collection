@@ -129,6 +129,6 @@ Afterfeel/
 
 <div align="center">
   <p>Built with 💙 by <a href="https://github.com/yourusername">Ananya Joshi</a></p>
-  <p><i>Merging Logic with Emotion</i></p>
+  <p><i>Merging Logic with Emotions and Code</i></p>
 </div>
 ```
