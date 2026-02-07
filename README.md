@@ -10,9 +10,11 @@
 
 ---
 
-## 📖 About The Project
+## 📝 Dashboard
 
 ![Product Name Screen Shot](./preview.png)
+
+## 📖 About The Project
 
 Afterfeel is more than just a static blog...
 
