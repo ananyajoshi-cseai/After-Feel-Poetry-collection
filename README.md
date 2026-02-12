@@ -127,10 +127,15 @@ Afterfeel/
 
 **Content Copyright:** ⚠️ **IMPORTANT:** The poetry content (text, titles, and creative writing) is **Copyright © Avni Joshi**. All rights reserved. The poems may not be reproduced, distributed, or used for commercial purposes without explicit written permission from the author.
 
+## 👤 Author
+
+**Ananya Joshi**
+* B.Tech in Computer Science and Artificial Intelligence (CSE AI)
+* Indira Gandhi Delhi Technical University for Women (IGDTUW)
+
 ---
 
 <div align="center">
-  <p>Built with 💙 by <a href="https://github.com/yourusername">Ananya Joshi</a></p>
   <p><i>Merging Logic with Emotions and Code</i></p>
 </div>
 ```
