@@ -119,6 +119,23 @@ Afterfeel/
 └── .gitignore        # Git configuration
 
 ```
+## 🧠 Technical Challenges & Solutions
+
+### 1. State Persistence in "No-Build" Architecture
+* **Challenge:** Syncing "Liked" poems and theme preferences across components without a global state manager (like Redux) or a database.
+* **Solution:** Engineered a synchronization layer using **React `useEffect` hooks** and **LocalStorage**, ensuring a seamless SPA (Single Page Application) experience despite the lightweight CDN-based stack.
+
+### 2. Contextual Sentiment Weighting
+* **Challenge:** Distinguishing between metaphorical intensity and literal sentiment (e.g., "burning hope" vs "burning pain").
+* **Solution:** Developed a **multi-axis scoring algorithm** that separates *Valence* (Positive/Negative) from *Arousal* (Intensity). This allows the UI to adapt its "Vividness" independently of the mood score.
+
+### 3. Client-Side Performance Optimization
+* **Challenge:** Potential lag when running a **particle animation system** simultaneously with real-time NLP tokenization and Text-to-Speech.
+* **Solution:** Optimized rendering by using **CSS hardware acceleration** (`translate3d`) for animations and implemented a **memoized analysis pipeline** to prevent redundant calculations during re-renders.
+
+### 4. Zero-Dependency NLP
+* **Challenge:** Implementing sentiment analysis without heavy server-side Python libraries or large npm packages.
+* **Solution:** Built a custom **Regular Expression-based tokenizer** and a weighted dictionary lookup that runs entirely in the browser, keeping the total application footprint under 50KB (excluding assets).
 ---
 
 ## 📝 License & Copyright
@@ -127,11 +144,16 @@ Afterfeel/
 
 **Content Copyright:** ⚠️ **IMPORTANT:** The poetry content (text, titles, and creative writing) is **Copyright © Avni Joshi**. All rights reserved. The poems may not be reproduced, distributed, or used for commercial purposes without explicit written permission from the author.
 
+---
+
 ## 👤 Author
 
 **Ananya Joshi**
-* B.Tech in Computer Science and Artificial Intelligence (CSE AI)
-* Indira Gandhi Delhi Technical University for Women (IGDTUW)
+*B.Tech in Computer Science and Artificial Intelligence (CSE AI)* **Indira Gandhi Delhi Technical University for Women (IGDTUW)**
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/ananya-joshi-cseai)
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/ananyajoshi-cseai)
+[![Portfolio](https://img.shields.io/badge/Portfolio-FF4B4B?style=for-the-badge&logo=google-chrome&logoColor=white)](https://after-feel-poetry-collection.vercel.app/)
 
 ---
 
