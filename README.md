@@ -104,6 +104,8 @@ Since this project uses a **No-Build** React architecture, you can run it instan
 1. **Clone** the repository: `git clone https://github.com/ananyajoshi-cseai/after-feel`
 2. **Open** `index.html` in your favorite browser.
 3. **Experience** the poetry—the CDNs handle all libraries automatically.
+
+Or you can directly click on the website link https://after-feel-poetry-collection.vercel.app/
 ## 📂 Project Structure
 
 To maintain simplicity and portability, the entire application lives within a single, self-contained architecture:
