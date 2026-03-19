@@ -159,8 +159,3 @@ Afterfeel/
 [![Portfolio](https://img.shields.io/badge/Portfolio-FF4B4B?style=for-the-badge&logo=google-chrome&logoColor=white)](https://after-feel-poetry-collection.vercel.app/)
 
 ---
-
-<div align="center">
-  <p><i>Merging Logic with Emotions and Code</i></p>
-</div>
-```
