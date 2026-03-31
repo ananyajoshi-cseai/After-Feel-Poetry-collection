@@ -116,7 +116,7 @@ Afterfeel/
 │                     # - React Components (App, FullPoemView, Modal)
 │                     # - Tailwind Configuration
 │                     # - Poem Data (JSON Array)
-│                     # - NLP Logic
+│                     # - The NLP Logic
 ├── README.md         # Project documentation
 └── .gitignore        # Git configuration
 
