@@ -102,7 +102,7 @@ The core of **After-Feel** is a deterministic, dictionary-based analysis engine 
 Since this project uses a **No-Build** React architecture, you can run it instantly without any local installations:
 
 1. **Clone** the repository: `git clone https://github.com/ananyajoshi-cseai/after-feel`
-2. **Open** `index.html` in your favorite browser.
+2. **Open** `index.html` in your default/favorite browser.
 3. **Experience** the poetry—the CDNs handle all libraries automatically.
 
 Or you can directly click on the website link https://after-feel-poetry-collection.vercel.app/
