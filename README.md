@@ -14,7 +14,7 @@
 
 ![Product Name Screen Shot](./preview.png)
 
-## 📖 About The Project
+## 📖 About The Project:
 
 Afterfeel is more than just a static blog...
 
@@ -22,14 +22,14 @@ It is a **reactive web experience**. The core philosophy was to create a "living
 
 The application features a **"Zero-Build" architecture**, meaning it runs entirely in the browser using React and Tailwind CSS via CDNs. This design choice highlights mastery over fundamental web technologies without reliance on heavy build tools like Webpack or Node.js.
 
-### Key Objectives
+### Key Objectives:
 * **Emotional Visualization:** Translating abstract feelings (Longing, Hope, Intensity) into concrete data points.
 * **Accessibility:** Ensuring poetry is accessible through visual, text, and auditory mediums.
 * **Aesthetic Minimalism:** Implementing "Glassmorphism" design trends to create a distraction-free reading environment.
 
 ---
 
-## ✨ Core Features
+## ✨ Core Features:
 
 ### 🧠 AI & Sentiment Analysis
 * **Real-time Vibe Check:** A custom Natural Language Processing (NLP) algorithm runs locally in the browser to tokenize poem text.
