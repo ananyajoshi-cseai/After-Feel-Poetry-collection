@@ -12,7 +12,7 @@
 
 ## 📝 Dashboard
 
-![Product Name Screen Shot](./preview.png)
+![Product Name Screen Shot](./screenshots/preview.png)
 
 ## 📖 About The Project:
 
