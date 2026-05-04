@@ -69,7 +69,7 @@ The application utilizes a deterministic dictionary-based approach for sentiment
 ```javascript
 // Simplified Logic Snippet
 const analyzePoem = (text) => {
-  // Tokenize and match against weighted dictionaries
+  // Tokenize and match against weighted dictionaries.
   // Calculate aggregate scores for Positivity, Negativity, Intensity
   // Return chart data and a definitive "Mood" label
 };
