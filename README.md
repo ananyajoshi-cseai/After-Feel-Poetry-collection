@@ -6,7 +6,7 @@
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![Status](https://img.shields.io/badge/status-Live-success.svg)
-![License](https://img.shields.io/badge/license-MIT-pink.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 ---
 
