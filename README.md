@@ -38,7 +38,7 @@ The application features a **"Zero-Build" architecture**, meaning it runs entire
     * 🔵 **Pain:** (Keywords: *rain, torn, dark, ache*)
     * 🔴 **Intensity:** (Keywords: *burn, wild, scream, fire*)
     * 🟡 **Nostalgia:** (Keywords: *miss, time, memory, ghost*)
-* **Dynamic Visualization:** A pie chart and mood badges are automatically generated based on the calculated scores.
+* **Dynamic Visualization:** A pie chart and mood badges are automatically generated based on the calculated scores!
 
 ### 🎨 Immersive UI/UX
 * **Floating Particle System:** A background animation layer featuring floating hearts, sparkles, and clouds that drift across the screen.
