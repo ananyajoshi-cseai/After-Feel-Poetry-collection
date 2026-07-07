@@ -124,7 +124,7 @@ Afterfeel/
 ## 🧠 Technical Challenges & Solutions
 
 ### 1. State Persistence in "No-Build" Architecture
-* **Challenge:** Syncing "Liked" poems and theme preferences across components without a global state manager (like Redux) or a database.
+* **Challenge:** Syncing "Liked" poems and theme preferences across components without a global state manager (like Redux) or a database
 * **Solution:** Engineered a synchronization layer using **React `useEffect` hooks** and **LocalStorage**, ensuring a seamless SPA (Single Page Application) experience despite the lightweight CDN-based stack.
 
 ### 2. Contextual Sentiment Weighting
