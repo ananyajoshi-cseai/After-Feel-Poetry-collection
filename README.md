@@ -2,7 +2,7 @@
 [![Live Demo](https://img.shields.io/badge/demo-online-pink.svg?style=for-the-badge&logo=vercel&logoColor=white)](https://after-feel-poetry-collection.vercel.app/)
 > *"Love isn’t proven when you beg or plead, It’s shown before you even speak."*
 
-**Afterfeel** is an immersive, interactive poetry portfolio designed to bridge the gap between literature and technology. Built as a digital sanctuary for the poetry of **Avni Joshi** (my sister), this application utilizes browser-based Artificial Intelligence to analyze the emotional weight of words in real-time, offering readers a visual representation of the feelings behind the verses.
+**Afterfeel** is an immersive, interactive poetry portfolio designed to bridge the gap between literature and technology. Built as a digital sanctuary for the poetry of **Avni Joshi** (my sister), this application utilizes browser-based Artificial Intelligence to analyze the emotional weight of words in real-time, offering readers a visual representation of the feelings behind the verses
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![Status](https://img.shields.io/badge/status-Live-success.svg)
@@ -18,9 +18,9 @@
 
 Afterfeel is more than just a static blog...
 
-It is a **reactive web experience**. The core philosophy was to create a "living" interface where the UI adapts to the content.
+It is a **reactive web experience**. The core philosophy was to create a "living" interface where the UI adapts to the content
 
-The application features a **"Zero-Build" architecture**, meaning it runs entirely in the browser using React and Tailwind CSS via CDNs. This design choice highlights mastery over fundamental web technologies without reliance on heavy build tools like Webpack or Node.js.
+The application features a **"Zero-Build" architecture**, meaning it runs entirely in the browser using React and Tailwind CSS via CDNs. This design choice highlights mastery over fundamental web technologies without reliance on heavy build tools like Webpack or Node.js
 
 ### Key Objectives:
 * **Emotional Visualization:** Translating abstract feelings (Longing, Hope, Intensity) into concrete data points.
@@ -38,7 +38,7 @@ The application features a **"Zero-Build" architecture**, meaning it runs entire
     * 🔵 **Pain:** (Keywords: *rain, torn, dark, ache*)
     * 🔴 **Intensity:** (Keywords: *burn, wild, scream, fire*)
     * 🟡 **Nostalgia:** (Keywords: *miss, time, memory, ghost*)
-* **Dynamic Visualization:** A pie chart and mood badges are automatically generated based on the calculated scores!
+* **Dynamic Visualization:** A pie chart and mood badges are automatically generated based on the calculated scores
 
 ### 🎨 Immersive UI/UX
 * **Floating Particle System:** A background animation layer featuring floating hearts, sparkles, and clouds that drift across the screen.
