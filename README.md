@@ -76,7 +76,7 @@ const analyzePoem = (text) => {
 ```
 ## 🧠 The Sentiment Engine Logic
 
-The core of **After-Feel** is a deterministic, dictionary-based analysis engine designed to process poetic text in real-time. Instead of heavy machine learning dependencies, it uses a high-performance three-stage pipeline to interpret the "mood" behind the verses.
+The core of **After-Feel** is a deterministic, dictionary-based analysis engine designed to process poetic text in real-time. Instead of heavy machine learning dependencies, it uses a high-performance three-stage pipeline to interpret the "mood" behind the verses
 
 ### 🔄 The Processing Pipeline
 
