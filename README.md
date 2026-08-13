@@ -144,7 +144,7 @@ Afterfeel/
 
 **Code License:** The source code (React logic, UI architecture, and NLP algorithms) is licensed under the **MIT License**. You are free to use, modify, and distribute the code for your own projects.
 
-**Content Copyright:** ⚠️ **IMPORTANT:** The poetry content (text, titles, and creative writing) is **Copyright © Avni Joshi**. All rights reserved. The poems must not be reproduced, distributed, or used for commercial purposes without explicit written permission from the author.
+**Content Copyright:** ⚠️ **IMPORTANT:** The poetry content (text, titles, and creative writing) is **Copyright © Avni Joshi**. All rights reserved. The poems must not be reproduced, distributed, or used for commercial purposes without explicit written permission from the author
 
 ---
 
