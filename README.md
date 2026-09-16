@@ -128,7 +128,7 @@ Afterfeel/
 * **Solution:** Engineered a synchronization layer using **React `useEffect` hooks** and **LocalStorage**, ensuring a seamless SPA (Single Page Application) experience despite the lightweight CDN-based stack.
 
 ### 2. Contextual Sentiment Weighting
-* **Challenge:** Distinguishing between metaphorical intensity and literal sentiment (e.g., "burning hope" vs "burning pain").
+* **Challenge:** Distinguishing between metaphorical intensity and literal sentiment (e.g., "burning hope" vs "burning pain")
 * **Solution:** Developed a **multi-axis scoring algorithm** that separates *Valence* (Positive/Negative) from *Arousal* (Intensity). This allows the UI to adapt its "Vividness" independently of the mood score.
 
 ### 3. Client-Side Performance Optimization
