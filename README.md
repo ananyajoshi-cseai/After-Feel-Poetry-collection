@@ -25,7 +25,7 @@ The application features a **"Zero-Build" architecture**, meaning it runs entire
 ### Key Objectives:
 * **Emotional Visualization:** Translating abstract feelings (Longing, Hope, Intensity) into concrete data points.
 * **Accessibility:** Ensuring poetry is accessible through visual, text, and auditory mediums.
-* **Aesthetic Minimalism:** Implementing "Glassmorphism" design trends to create a distraction-free reading environment.
+* **Aesthetic Minimalism:** Implementing "Glassmorphism" design trends to create a distraction-free reading environment
 
 ---
 
