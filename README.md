@@ -54,7 +54,7 @@ The application features a **"Zero-Build" architecture**, meaning it runs entire
 
 ## 🛠️ Technical Architecture
 
-This project demonstrates a sophisticated use of "No-Build" React. It proves that complex, interactive applications can be built with a lightweight footprint.
+This project demonstrates a sophisticated use of "No-Build" React. It proves that complex, interactive applications can be built with a lightweight footprint
 
 | Component | Technology | Description |
 | :--- | :--- | :--- |
