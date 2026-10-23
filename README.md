@@ -23,8 +23,8 @@ It is a **reactive web experience**. The core philosophy was to create a "living
 The application features a **"Zero-Build" architecture**, meaning it runs entirely in the browser using React and Tailwind CSS via CDNs. This design choice highlights mastery over fundamental web technologies without reliance on heavy build tools like Webpack or Node.js
 
 ### Key Objectives:
-* **Emotional Visualization:** Translating abstract feelings (Longing, Hope, Intensity) into concrete data points.
-* **Accessibility:** Ensuring poetry is accessible through visual, text, and auditory mediums.
+* **Emotional Visualization:** Translating abstract feelings (Longing, Hope, Intensity) into concrete data points
+* **Accessibility:** Ensuring poetry is accessible through visual, text, and auditory mediums
 * **Aesthetic Minimalism:** Implementing "Glassmorphism" design trends to create a distraction-free reading environment
 
 ---
