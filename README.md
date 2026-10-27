@@ -58,7 +58,7 @@ This project demonstrates a sophisticated use of "No-Build" React. It proves tha
 
 | Component | Technology | Description |
 | :--- | :--- | :--- |
-| **Frontend Framework** | **React 18** | Used via UMD CDN for component-based state management. |
+| **Frontend Framework** | **React 18** | Used via UMD CDN for component-based state management |
 | **Styling Engine** | **Tailwind CSS** | Used via Script CDN for utility-first styling. |
 | **Compiler** | **Babel** | In-browser transpilation of JSX syntax. |
 | **Icons** | **Lucide / SVG** | Custom SVG paths implemented as reusable React components. |
